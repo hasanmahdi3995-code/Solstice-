@@ -108,6 +108,24 @@ const adminOnly = (fn) => authed(async (req, res) => {
 
 /* ---------- email code ---------- */
 async function sendCode(email, code) {
+  // Free option (no domain needed): Gmail SMTP with an App Password.
+  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    const nodemailer = require('nodemailer');
+    const tx = nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD } });
+    try {
+      await tx.sendMail({
+        from: 'Solstice <' + process.env.GMAIL_USER + '>',
+        to: email,
+        subject: `Your Solstice code: ${code}`,
+        html: `<div style="font-family:Georgia,serif;background:#0a0a0b;color:#eee;padding:32px;text-align:center">
+        <h2 style="color:#e8b931;letter-spacing:6px;margin:0 0 16px">SOLSTICE</h2>
+        <p>Use this code to verify your email:</p>
+        <p style="font-size:34px;letter-spacing:10px;color:#e8b931;margin:18px 0"><b>${code}</b></p>
+        <p style="color:#8b8778;font-size:13px">It expires in 15 minutes. If this wasn't you, ignore this email.</p></div>`,
+      });
+    } catch (e) { console.error('Gmail:', e.message); bad('Could not send the email. Try again later.', 502); }
+    return;
+  }
   if (!process.env.RESEND_API_KEY) bad('Email service is not configured yet.', 500);
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -487,7 +505,7 @@ app.get('/api/health', (req, res) => res.json({
   ok: true,
   database: !!((process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) || (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)),
   session_secret: !!process.env.SESSION_SECRET,
-  email_service: !!process.env.RESEND_API_KEY,
+  email_service: !!(process.env.RESEND_API_KEY || (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD)),
 }));
 
 /* ---------- page ---------- */
