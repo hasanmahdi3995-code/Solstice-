@@ -195,6 +195,7 @@ tr.click:hover td{background:var(--panel2)}
 .authcard .logo{animation:none!important}
 .authcard .logowrap::before{animation:none!important}
 @media(max-width:600px){.orb.o3,.gridfx,.chip{display:none!important}.orb.o1{width:300px;height:300px}.orb.o2{width:340px;height:340px}}
+.spamhint{text-align:center;margin-top:14px}.spamhint b{color:var(--gold2)}
 </style>
 </head>
 <body>
@@ -391,7 +392,8 @@ function showAuth(){
       <div class="field"><label>Password</label><input id="pw" class="hasEye" type="password" autocomplete="${mode==='login'?'current-password':'new-password'}" minlength="${mode==='login'?1:8}" required placeholder="${mode==='register'?'At least 8 characters':'Your password'}"><button type="button" class="eye" id="eye" aria-label="Show or hide password">${EYE}</button><i class="bar"></i></div>
       ${mode==='register' ? '<div><div class="meter" id="mt"><span></span><span></span><span></span><span></span></div><div class="mtxt" id="mtx">Use 8+ characters</div></div>' : '<div></div>'}
       <button class="btn" id="go">${mode==='login'?'Sign in':'Send verification code'}</button>
-      <div class="msg" id="msg"></div></form>`;
+      <div class="msg" id="msg"></div></form>
+      <p class="note spamhint">Verification codes are sent by email. Don't see it in your inbox? Check your <b>spam / junk</b> folder.</p>`;
 
   const wirePane = () => {
     const pw = $('#pw'), eye = $('#eye');
@@ -434,7 +436,7 @@ function showAuth(){
     $('#bd').innerHTML = `<div class="pane"><form id="f"><input id="code" class="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="------" required>
       <button class="btn" id="go">Verify &amp; create account</button>
       <button type="button" class="btn ghost" id="re">Resend code</button>
-      <div class="msg" id="msg"></div></form><a id="back" class="back">&larr; Back</a></div>`;
+      <div class="msg" id="msg"></div></form><p class="note spamhint">Can't find the email? Check your <b>spam / junk</b> folder, then tap Resend code.</p><a id="back" class="back">&larr; Back</a></div>`;
     $('#code').focus();
     $('#code').oninput = e => { e.target.value = e.target.value.replace(/\D/g, ''); };
     ripple($('#go')); ripple($('#re'));
