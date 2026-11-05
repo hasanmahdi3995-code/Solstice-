@@ -29,24 +29,97 @@ a{color:var(--gold);cursor:pointer}
 @keyframes sweep{to{transform:translateX(100%)}}
 
 /* auth */
-#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 0,#17130a 0,#0a0a0b 55%)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:28px}
-.authcard{width:100%;max-width:400px;text-align:center}
-.authcard .logo{width:64px;margin-bottom:6px}
-.authcard h1{font-size:26px;color:var(--gold);letter-spacing:8px;margin-bottom:4px}
-.authcard p.s{color:var(--muted);font-size:13px;margin-bottom:20px}
-.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:18px}
-.tabs button{flex:1;background:none;border:0;padding:10px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
-.tabs button.on{color:var(--gold);border-color:var(--gold)}
-label{display:block;text-align:left;font-size:12px;color:var(--muted);margin:12px 0 5px;letter-spacing:.5px;text-transform:uppercase}
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+#auth{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;background:radial-gradient(circle at 50% 0,#17130a 0,#07070a 60%);perspective:1200px}
+#auth .bg{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;will-change:transform}
+.orb.o1{width:460px;height:460px;background:radial-gradient(circle,#e8b931,transparent 70%);top:-140px;left:-120px;animation:drift1 16s ease-in-out infinite alternate}
+.orb.o2{width:540px;height:540px;background:radial-gradient(circle,#b4501a,transparent 70%);bottom:-200px;right:-140px;animation:drift2 21s ease-in-out infinite alternate}
+.orb.o3{width:380px;height:380px;background:radial-gradient(circle,#1f6f68,transparent 70%);top:35%;left:55%;opacity:.32;animation:drift3 18s ease-in-out infinite alternate}
+@keyframes drift1{to{transform:translate(180px,130px) scale(1.25)}}
+@keyframes drift2{to{transform:translate(-200px,-110px) scale(1.15)}}
+@keyframes drift3{to{transform:translate(-160px,120px) scale(1.3)}}
+.gridfx{position:absolute;left:-50%;right:-50%;bottom:-8%;height:50%;background-image:linear-gradient(rgba(232,185,49,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(232,185,49,.2) 1px,transparent 1px);background-size:56px 56px;transform:perspective(500px) rotateX(62deg);transform-origin:50% 100%;-webkit-mask-image:linear-gradient(to top,#000,transparent 85%);mask-image:linear-gradient(to top,#000,transparent 85%);animation:gridMove 3s linear infinite;opacity:.4}
+@keyframes gridMove{to{background-position:0 56px,0 0}}
+.chip{position:absolute;left:var(--x);bottom:-90px;width:var(--s);height:var(--s);border-radius:50%;border:1px solid rgba(232,185,49,.35);display:grid;place-items:center;font:11px Georgia,serif;letter-spacing:.5px;color:rgba(246,211,101,.7);background:radial-gradient(circle at 30% 30%,rgba(246,211,101,.2),rgba(232,185,49,.03));filter:blur(var(--b));opacity:0;animation:chipUp var(--d) linear var(--dl) infinite}
+@keyframes chipUp{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:.55}90%{opacity:.55}100%{transform:translateY(-115vh) rotate(360deg);opacity:0}}
+#fx{position:absolute;inset:0;width:100%;height:100%}
+.vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.7) 100%)}
+.tilt{position:relative;z-index:2;width:100%;max-width:400px;transition:transform .2s ease-out;transform-style:preserve-3d}
+.authcard{position:relative;width:100%;text-align:center;padding:30px 28px 26px;background:linear-gradient(160deg,rgba(32,27,14,.74),rgba(14,14,16,.8) 55%);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);border:1px solid rgba(232,185,49,.16);border-radius:14px;box-shadow:0 30px 80px -20px rgba(0,0,0,.85),0 0 60px -10px rgba(232,185,49,.18),inset 0 1px 0 rgba(255,236,170,.12);animation:cardIn .9s cubic-bezier(.2,.9,.25,1) both,breathe 5s ease-in-out .9s infinite}
+@keyframes cardIn{from{opacity:0;transform:translateY(40px) scale(.94);filter:blur(8px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes breathe{0%,100%{box-shadow:0 30px 80px -20px rgba(0,0,0,.85),0 0 50px -10px rgba(232,185,49,.14),inset 0 1px 0 rgba(255,236,170,.12)}50%{box-shadow:0 30px 80px -20px rgba(0,0,0,.85),0 0 90px -6px rgba(232,185,49,.32),inset 0 1px 0 rgba(255,236,170,.18)}}
+.authcard::before{content:"";position:absolute;inset:-1px;border-radius:15px;padding:1.5px;background:conic-gradient(from var(--ang),transparent 0 58%,rgba(232,185,49,.05) 62%,rgba(246,211,101,.95) 80%,#fff3c4 86%,transparent 93%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 6s linear infinite;pointer-events:none}
+@keyframes spin{to{--ang:360deg}}
+.glare{position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(280px circle at var(--mx,50%) var(--my,0%),rgba(246,211,101,.13),transparent 60%)}
+.authcard .logowrap{display:inline-block;position:relative;animation:float 5s ease-in-out infinite}
+.authcard .logowrap::before{content:"";position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,rgba(232,185,49,.3),transparent 65%);animation:halo 3.2s ease-in-out infinite;z-index:-1}
+.authcard .logo{width:54px;display:block;margin:0;filter:drop-shadow(0 0 10px rgba(232,185,49,.55));animation:glowp 3.2s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px)}}
+@keyframes glowp{50%{filter:drop-shadow(0 0 22px rgba(246,211,101,.9))}}
+@keyframes halo{50%{transform:scale(1.25);opacity:.6}}
+.authcard h1{font-size:26px;letter-spacing:8px;padding-left:8px;margin:8px 0 4px;background:linear-gradient(100deg,#b9801a 0%,#f6d365 25%,#fff6d0 50%,#f6d365 75%,#b9801a 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:txt 5s linear infinite}
+@keyframes txt{to{background-position:-250% 0}}
+.authcard p.s{color:var(--muted);font-size:13px;margin-bottom:20px;min-height:18px}
+.tabs{position:relative;display:flex;border-bottom:1px solid rgba(232,185,49,.15);margin-bottom:10px}
+.tabs button{flex:1;background:none;border:0;padding:10px;color:var(--muted);cursor:pointer;transition:color .3s}
+.tabs button:hover{color:var(--text)}
+.tabs button.on{color:var(--gold2);text-shadow:0 0 14px rgba(232,185,49,.5)}
+.tabs .ind{position:absolute;left:0;bottom:-1px;width:50%;height:2px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);box-shadow:0 0 12px var(--gold);transition:transform .45s cubic-bezier(.7,0,.2,1)}
+.tabs[data-m=register] .ind{transform:translateX(100%)}
+label{display:block;text-align:left;font-size:12px;color:var(--muted);margin:12px 0 5px;letter-spacing:.5px;text-transform:uppercase;transition:color .25s}
 input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:11px 12px;outline:none}
 input:focus,select:focus{border-color:var(--gold)}
+.authcard input{background:rgba(6,6,8,.65);border:1px solid rgba(232,185,49,.18);border-radius:8px;padding:12px 14px;transition:border-color .25s,box-shadow .25s,background .25s}
+.authcard input:focus{border-color:rgba(246,211,101,.85);background:rgba(10,9,6,.85);box-shadow:0 0 0 3px rgba(232,185,49,.14),0 0 22px rgba(232,185,49,.22)}
+.authcard input::placeholder{color:#58554b}
+.field{position:relative}
+.field:focus-within label{color:var(--gold2)}
+.field input.hasEye{padding-right:46px}
+.field .eye{position:absolute;right:6px;bottom:6px;width:32px;height:32px;display:grid;place-items:center;background:none;border:0;color:var(--muted);cursor:pointer;border-radius:6px;transition:color .2s,background .2s}
+.field .eye:hover{color:var(--gold2);background:rgba(232,185,49,.08)}
+.field .eye.on{color:var(--gold)}
+.eye .sl{display:none}.eye.on .sl{display:block}
+.field .bar{position:absolute;left:10px;right:10px;bottom:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);transform:scaleX(0);transition:transform .4s ease;pointer-events:none}
+.field:focus-within .bar{transform:scaleX(1)}
+.meter{display:flex;gap:5px;margin-top:10px}
+.meter span{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.07);transition:background .3s,box-shadow .3s}
+.meter span.on{background:var(--c);box-shadow:0 0 8px var(--c)}
+.mtxt{font-size:11px;color:var(--muted);text-align:left;margin-top:5px;letter-spacing:.5px;min-height:14px}
 .btn{width:100%;margin-top:18px;background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1a1400;border:0;border-radius:6px;padding:12px;font-weight:600;letter-spacing:.5px;cursor:pointer}
 .btn:disabled{opacity:.5;cursor:wait}
 .btn.ghost{background:none;border:1px solid var(--line);color:var(--text);margin-top:10px}
+.authcard .btn{position:relative;overflow:hidden;border-radius:8px;padding:13px;transition:transform .2s,box-shadow .3s,filter .2s;box-shadow:0 8px 24px -8px rgba(232,185,49,.55),inset 0 1px 0 rgba(255,255,255,.35)}
+.authcard .btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.07);box-shadow:0 14px 34px -8px rgba(232,185,49,.8),inset 0 1px 0 rgba(255,255,255,.4)}
+.authcard .btn:active:not(:disabled){transform:translateY(0) scale(.985)}
+.authcard .btn::after{content:"";position:absolute;top:0;bottom:0;width:60%;left:-80%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:btnShine 3.6s ease-in-out infinite;pointer-events:none}
+@keyframes btnShine{0%,55%{left:-80%}100%{left:140%}}
+.authcard .btn.ghost{background:rgba(255,255,255,.02);border:1px solid rgba(232,185,49,.25);box-shadow:none;color:var(--text)}
+.authcard .btn.ghost::after{display:none}
+.authcard .btn.ghost:hover:not(:disabled){border-color:var(--gold);box-shadow:0 0 18px rgba(232,185,49,.2);filter:none}
+.btn.loading{color:transparent!important}
+.btn.loading:disabled{opacity:1}
+.btn.loading::before{content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border:2px solid rgba(26,20,0,.25);border-top-color:#1a1400;border-radius:50%;animation:rot .7s linear infinite;z-index:1}
+@keyframes rot{to{transform:rotate(360deg)}}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.5);transform:scale(0);animation:rip .7s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(1);opacity:0}}
 .msg{min-height:18px;margin-top:12px;font-size:13px;color:var(--red)}
 .msg.ok{color:var(--green)}
 .code{letter-spacing:12px;text-align:center;font-size:24px;font-family:Georgia,serif}
+.authcard .code{padding-left:26px}
+.back{display:inline-block;margin-top:14px;font-size:13px}
+.pane form>*{animation:up .55s cubic-bezier(.2,.8,.2,1) both}
+.pane form>*:nth-child(2){animation-delay:.06s}.pane form>*:nth-child(3){animation-delay:.12s}
+.pane form>*:nth-child(4){animation-delay:.18s}.pane form>*:nth-child(5){animation-delay:.24s}.pane form>*:nth-child(6){animation-delay:.3s}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
+#auth.hold,#auth.hold *,#auth.hold *::before,#auth.hold *::after{animation-play-state:paused!important}
+#auth.leaving .tilt{transform:scale(1.12)!important;opacity:0;transition:transform .55s cubic-bezier(.5,0,.2,1),opacity .5s ease}
+#auth.leaving::after{content:"";position:absolute;inset:0;z-index:5;background:radial-gradient(circle,rgba(246,211,101,.55),transparent 60%);animation:flash .55s ease forwards;pointer-events:none}
+@keyframes flash{from{opacity:0}to{opacity:1}}
+@media(max-width:600px){.orb{filter:blur(50px)}.authcard{padding:26px 20px 22px}}
+@media(prefers-reduced-motion:reduce){#auth *,#auth *::before,#auth *::after{animation:none!important;transition:none!important}}
 
 /* app */
 #app{display:flex;min-height:100vh}
@@ -168,65 +241,201 @@ const usd = n => '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2
 const qtyf = n => Number(n).toLocaleString('en-US',{maximumFractionDigits:8});
 let toastT; function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2600)}
 async function api(path, body){
-  const r = await fetch('/api/'+path, body===undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const j = await r.json().catch(()=>({}));
-  if(!r.ok){ const e=new Error(j.error||'Request failed'); e.status=r.status; throw e; }
+  let r;
+  try{ r = await fetch('/api/'+path, body===undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
+  catch(e){ throw new Error('Cannot reach the server. Check your connection and try again.'); }
+  const isJson = (r.headers.get('content-type')||'').includes('json');
+  const j = isJson ? await r.json().catch(()=>({})) : {};
+  if(!r.ok || !isJson){
+    const msg = j.error || (r.status===404 || r.ok ? 'Server API not found. Make sure vercel.json is deployed.' : 'Server error ('+r.status+'). Check your Vercel function logs.');
+    const e = new Error(msg); e.status = r.status; throw e;
+  }
   return j;
 }
 
 /* ---------- intro ---------- */
+let introDone = false;
 function runIntro(){
   const el = $('#intro');
   el.innerHTML = `<div class="shine"></div>${logo(true)}<div class="word">SOLSTICE</div><div class="sub">Trade with confidence</div>`;
   let done = false;
-  const end = () => { if(done) return; done = true; el.classList.add('out'); setTimeout(()=>el.remove(), 1000); };
+  const end = () => { if(done) return; done = true; introDone = true; document.dispatchEvent(new Event('introdone')); el.classList.add('out'); setTimeout(()=>el.remove(), 1000); };
   el.addEventListener('click', end);
   setTimeout(end, 4300);
 }
 
 /* ---------- auth ---------- */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const COIN_CHIPS = ['BTC','ETH','SOL','BNB','XRP','LTC','DOGE','TRX','BTC','ETH'];
+const EYE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path class="sl" d="M3 3l18 18"/></svg>';
+
+function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+function ripple(btn){
+  btn.addEventListener('pointerdown', e => {
+    const r = btn.getBoundingClientRect(), s = document.createElement('span'), d = Math.max(r.width, r.height) * 2;
+    s.className = 'rip';
+    s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d/2}px;top:${e.clientY - r.top - d/2}px`;
+    btn.appendChild(s); setTimeout(() => s.remove(), 700);
+  });
+}
+
+/* background VFX: rising gold embers, a live price line, click sparks */
+function startFx(cv, host, mouse){
+  const ctx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0;
+  const size = () => { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  size();
+  const mk = init => ({ x: Math.random() * W, y: init ? Math.random() * H : H + 10, r: .5 + Math.random() * 2,
+    vy: .15 + Math.random() * .55, vx: (Math.random() - .5) * .25, ph: Math.random() * 6.28, tw: .01 + Math.random() * .03 });
+  const P = Array.from({ length: W < 600 ? 38 : 80 }, () => mk(true));
+  const B = [];
+  const STEP = 16; let pts = [], off = 0, v = .5;
+  const cnt = () => Math.ceil(W / STEP) + 3;
+  const nextV = () => { v += (Math.random() - .47) * .09; v = Math.max(.08, Math.min(.92, v)); return v; };
+  while (pts.length < cnt()) pts.push(nextV());
+  let last = 0;
+
+  const draw = dt => {
+    ctx.clearRect(0, 0, W, H);
+    off += .35 * dt;
+    if (off >= STEP) { off -= STEP; pts.shift(); pts.push(nextV()); }
+    while (pts.length < cnt()) pts.push(nextV());
+    const top = H * .5, hh = H * .4;
+    ctx.beginPath();
+    pts.forEach((p, i) => { const x = i * STEP - off, y = top + (1 - p) * hh; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    const lg = ctx.createLinearGradient(0, 0, W, 0);
+    lg.addColorStop(0, 'rgba(232,185,49,0)'); lg.addColorStop(.5, 'rgba(246,211,101,.55)'); lg.addColorStop(1, 'rgba(232,185,49,.05)');
+    ctx.strokeStyle = lg; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+    if (W >= 600) { ctx.shadowColor = 'rgba(232,185,49,.6)'; ctx.shadowBlur = 14; }
+    ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.lineTo((pts.length - 1) * STEP - off, H); ctx.lineTo(-off, H); ctx.closePath();
+    const fg = ctx.createLinearGradient(0, top, 0, H);
+    fg.addColorStop(0, 'rgba(232,185,49,.12)'); fg.addColorStop(1, 'rgba(232,185,49,0)');
+    ctx.fillStyle = fg; ctx.fill();
+
+    for (const p of P) {
+      p.ph += p.tw * dt; p.y -= p.vy * dt; p.x += (p.vx + Math.sin(p.ph) * .25) * dt;
+      const dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy;
+      if (d2 < 14400) { const d = Math.sqrt(d2) || 1, f = (120 - d) / 120; p.x += dx / d * f * 3 * dt; p.y += dy / d * f * 3 * dt; }
+      if (p.y < -10 || p.x < -10 || p.x > W + 10) Object.assign(p, mk(false));
+      const a = .25 + .55 * Math.abs(Math.sin(p.ph * 2));
+      ctx.fillStyle = `rgba(246,211,101,${a * .18})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 3.2, 0, 6.283); ctx.fill();
+      ctx.fillStyle = `rgba(255,236,170,${a})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
+    }
+    while (mouse.clicks.length) {
+      const c = mouse.clicks.pop();
+      for (let i = 0; i < 16; i++) { const a = Math.random() * 6.283, s = 1 + Math.random() * 3.2; B.push({ x: c.x, y: c.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1 }); }
+    }
+    for (let i = B.length - 1; i >= 0; i--) {
+      const b = B[i]; b.x += b.vx * dt; b.y += b.vy * dt; b.vx *= .96; b.vy = b.vy * .96 + .03 * dt; b.life -= .022 * dt;
+      if (b.life <= 0) { B.splice(i, 1); continue; }
+      ctx.fillStyle = `rgba(255,226,140,${b.life})`; ctx.beginPath(); ctx.arc(b.x, b.y, 1 + b.life * 1.6, 0, 6.283); ctx.fill();
+    }
+  };
+
+  const frame = t => {
+    if (!cv.isConnected || host.classList.contains('hide')) { window.removeEventListener('resize', size); return; }
+    requestAnimationFrame(frame);
+    const dt = Math.min(2.5, (t - last) / 16.7 || 1); last = t;
+    draw(dt);
+  };
+  window.addEventListener('resize', size);
+  if (reduce) { draw(0); return; }
+  requestAnimationFrame(frame);
+}
+
 function showAuth(){
   $('#app').classList.add('hide');
-  const box = $('#auth'); box.classList.remove('hide');
+  const box = $('#auth'); box.classList.remove('hide', 'leaving');
+  if (!introDone) { box.classList.add('hold'); document.addEventListener('introdone', () => box.classList.remove('hold'), { once: true }); }
   let mode = 'login', pendingEmail = '';
-  const draw = () => {
-    box.innerHTML = `<div class="card authcard">
-      ${logo(false)}<h1>SOLSTICE</h1><p class="s">Classic crypto trading</p>
-      <div class="tabs"><button data-m="login" class="${mode==='login'?'on':''}">Sign in</button><button data-m="register" class="${mode==='register'?'on':''}">Create account</button></div>
-      <form id="f">
-        <label>Email</label><input id="em" type="email" autocomplete="email" required>
-        <label>Password</label><input id="pw" type="password" autocomplete="${mode==='login'?'current-password':'new-password'}" minlength="${mode==='login'?1:8}" required placeholder="${mode==='register'?'At least 8 characters':''}">
-        <button class="btn" id="go">${mode==='login'?'Sign in':'Send verification code'}</button>
-        <div class="msg" id="msg"></div>
-      </form></div>`;
-    box.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;draw()});
+  const mouse = { x: -999, y: -999, clicks: [] };
+
+  const chips = COIN_CHIPS.map((c, i) => `<span class="chip" style="--x:${(i * 10 + Math.random() * 8).toFixed(1)}%;--s:${34 + Math.random() * 30 | 0}px;--d:${(14 + Math.random() * 16).toFixed(1)}s;--dl:-${(Math.random() * 20).toFixed(1)}s;--b:${(Math.random() * 3).toFixed(1)}px">${c}</span>`).join('');
+  box.innerHTML = `<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="gridfx"></div>${chips}<canvas id="fx"></canvas><div class="vig"></div></div>
+    <div class="tilt" id="tilt"><div class="card authcard" id="ac"><div class="glare"></div>
+      <div class="logowrap">${logo(false)}</div><h1 id="ah">SOLSTICE</h1><p class="s" id="as"></p><div id="bd"></div></div></div>`;
+
+  const tilt = $('#tilt'), card = $('#ac');
+  const fine = matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  box.onpointermove = e => {
+    const cr = $('#fx').getBoundingClientRect(); mouse.x = e.clientX - cr.left; mouse.y = e.clientY - cr.top;
+    if (!fine) return;
+    const r = card.getBoundingClientRect(), dx = (e.clientX - (r.left + r.width / 2)) / innerWidth, dy = (e.clientY - (r.top + r.height / 2)) / innerHeight;
+    tilt.style.transform = `rotateY(${dx * 10}deg) rotateX(${-dy * 10}deg)`;
+    card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+    card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+  };
+  box.onpointerleave = () => { mouse.x = mouse.y = -999; tilt.style.transform = ''; };
+  box.onpointerdown = e => { const cr = $('#fx').getBoundingClientRect(); mouse.clicks.push({ x: e.clientX - cr.left, y: e.clientY - cr.top }); };
+  startFx($('#fx'), box, mouse);
+
+  const goIn = async () => { box.classList.add('leaving'); await sleep(550); await boot(); };
+
+  const tabsHTML = () => `<div class="tabs" data-m="${mode}"><button type="button" data-m="login" class="${mode==='login'?'on':''}">Sign in</button><button type="button" data-m="register" class="${mode==='register'?'on':''}">Create account</button><i class="ind"></i></div>`;
+  const paneHTML = () => `<form id="f">
+      <div class="field"><label>Email</label><input id="em" type="email" autocomplete="email" required placeholder="you@example.com"><i class="bar"></i></div>
+      <div class="field"><label>Password</label><input id="pw" class="hasEye" type="password" autocomplete="${mode==='login'?'current-password':'new-password'}" minlength="${mode==='login'?1:8}" required placeholder="${mode==='register'?'At least 8 characters':'Your password'}"><button type="button" class="eye" id="eye" aria-label="Show or hide password">${EYE}</button><i class="bar"></i></div>
+      ${mode==='register' ? '<div><div class="meter" id="mt"><span></span><span></span><span></span><span></span></div><div class="mtxt" id="mtx">Use 8+ characters</div></div>' : '<div></div>'}
+      <button class="btn" id="go">${mode==='login'?'Sign in':'Send verification code'}</button>
+      <div class="msg" id="msg"></div></form>`;
+
+  const wirePane = () => {
+    const pw = $('#pw'), eye = $('#eye');
+    eye.onclick = () => { const s = pw.type === 'password'; pw.type = s ? 'text' : 'password'; eye.classList.toggle('on', s); };
+    if (mode === 'register') pw.addEventListener('input', () => {
+      const v = pw.value;
+      const sc = Math.min(4, (v.length >= 8) + (v.length >= 12) + (/[a-z]/.test(v) && /[A-Z]/.test(v)) + /\d/.test(v) + /[^A-Za-z0-9]/.test(v));
+      const col = ['#e5604d', '#e5604d', '#e8b931', '#9ccc65', '#4cc38a'][sc];
+      const m = $('#mt'); m.style.setProperty('--c', col);
+      m.querySelectorAll('span').forEach((s, i) => s.classList.toggle('on', i < sc));
+      $('#mtx').textContent = v ? ['Too weak', 'Weak', 'Okay', 'Good', 'Strong'][sc] : 'Use 8+ characters';
+    });
+    ripple($('#go'));
     $('#f').onsubmit = async e => {
-      e.preventDefault(); const btn=$('#go'), msg=$('#msg'); btn.disabled=true; msg.textContent='';
-      const email=$('#em').value, password=$('#pw').value;
-      try{
-        if(mode==='login'){ await api('login',{email,password}); await boot(); }
-        else { await api('register',{email,password}); pendingEmail=email; verify(); }
-      }catch(err){ msg.textContent=err.message; btn.disabled=false; }
+      e.preventDefault(); const btn = $('#go'), msg = $('#msg'); btn.disabled = true; btn.classList.add('loading'); msg.textContent = '';
+      const email = $('#em').value, password = pw.value;
+      try {
+        if (mode === 'login') { await api('login', { email, password }); await goIn(); }
+        else { await api('register', { email, password }); pendingEmail = email; viewVerify(); }
+      } catch (err) { msg.textContent = err.message; btn.disabled = false; btn.classList.remove('loading'); shake($('#f')); }
     };
   };
-  const verify = () => {
-    box.innerHTML = `<div class="card authcard">
-      ${logo(false)}<h1>VERIFY</h1><p class="s">We sent a 6-digit code to<br><b style="color:var(--text)">${esc(pendingEmail)}</b></p>
-      <form id="f"><input id="code" class="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="------" required>
+  const setPane = () => { const keep = ($('#em') || {}).value || ''; $('#pane').innerHTML = paneHTML(); $('#em').value = keep; wirePane(); };
+
+  const viewForm = () => {
+    $('#ah').textContent = 'SOLSTICE'; $('#as').textContent = 'Classic crypto trading';
+    $('#bd').innerHTML = tabsHTML() + '<div id="pane" class="pane"></div>';
+    box.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+      if (mode === b.dataset.m) return;
+      mode = b.dataset.m; $('.tabs', box).dataset.m = mode;
+      box.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+      setPane();
+    });
+    setPane();
+  };
+
+  const viewVerify = () => {
+    $('#ah').textContent = 'VERIFY';
+    $('#as').innerHTML = `We sent a 6-digit code to<br><b style="color:var(--text)">${esc(pendingEmail)}</b>`;
+    $('#bd').innerHTML = `<div class="pane"><form id="f"><input id="code" class="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="------" required>
       <button class="btn" id="go">Verify &amp; create account</button>
       <button type="button" class="btn ghost" id="re">Resend code</button>
-      <div class="msg" id="msg"></div></form>
-      <a id="back" style="font-size:13px">&larr; Back</a></div>`;
+      <div class="msg" id="msg"></div></form><a id="back" class="back">&larr; Back</a></div>`;
     $('#code').focus();
-    $('#back').onclick = draw;
-    $('#re').onclick = async () => { const m=$('#msg'); try{ await api('resend',{email:pendingEmail}); m.className='msg ok'; m.textContent='New code sent.'; }catch(e){ m.className='msg'; m.textContent=e.message; } };
+    $('#code').oninput = e => { e.target.value = e.target.value.replace(/\D/g, ''); };
+    ripple($('#go')); ripple($('#re'));
+    $('#back').onclick = viewForm;
+    $('#re').onclick = async () => { const m = $('#msg'); try { await api('resend', { email: pendingEmail }); m.className = 'msg ok'; m.textContent = 'New code sent.'; } catch (e) { m.className = 'msg'; m.textContent = e.message; } };
     $('#f').onsubmit = async e => {
-      e.preventDefault(); const btn=$('#go'), msg=$('#msg'); btn.disabled=true; msg.className='msg'; msg.textContent='';
-      try{ await api('verify',{email:pendingEmail,code:$('#code').value}); await boot(); }
-      catch(err){ msg.textContent=err.message; btn.disabled=false; }
+      e.preventDefault(); const btn = $('#go'), msg = $('#msg'); btn.disabled = true; btn.classList.add('loading'); msg.className = 'msg'; msg.textContent = '';
+      try { await api('verify', { email: pendingEmail, code: $('#code').value }); await goIn(); }
+      catch (err) { msg.textContent = err.message; btn.disabled = false; btn.classList.remove('loading'); shake($('#f')); }
     };
   };
-  draw();
+  viewForm();
 }
 
 /* ---------- app shell ---------- */
