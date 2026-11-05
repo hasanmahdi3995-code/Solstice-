@@ -184,6 +184,17 @@ tr.click:hover td{background:var(--panel2)}
   .top{display:flex}
   .hero{padding:22px}
 }
+
+/* ---- performance overrides (removes the GPU-heavy effects) ---- */
+.orb{filter:none!important;will-change:auto}
+.chip{filter:none!important}
+.authcard{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:linear-gradient(160deg,rgba(28,24,13,.94),rgba(14,14,16,.96) 55%)!important;animation:cardIn .6s ease-out both!important}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.authcard::before{animation:none!important;--ang:40deg}
+.gridfx{animation:none!important}
+.authcard .logo{animation:none!important}
+.authcard .logowrap::before{animation:none!important}
+@media(max-width:600px){.orb.o3,.gridfx,.chip{display:none!important}.orb.o1{width:300px;height:300px}.orb.o2{width:340px;height:340px}}
 </style>
 </head>
 <body>
@@ -283,13 +294,13 @@ function ripple(btn){
 function startFx(cv, host, mouse){
   const ctx = cv.getContext('2d');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = window.innerWidth < 600 ? 1 : Math.min(window.devicePixelRatio || 1, 2);
   let W = 0, H = 0;
   const size = () => { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
   size();
   const mk = init => ({ x: Math.random() * W, y: init ? Math.random() * H : H + 10, r: .5 + Math.random() * 2,
     vy: .15 + Math.random() * .55, vx: (Math.random() - .5) * .25, ph: Math.random() * 6.28, tw: .01 + Math.random() * .03 });
-  const P = Array.from({ length: W < 600 ? 38 : 80 }, () => mk(true));
+  const P = Array.from({ length: W < 600 ? 18 : 60 }, () => mk(true));
   const B = [];
   const STEP = 16; let pts = [], off = 0, v = .5;
   const cnt = () => Math.ceil(W / STEP) + 3;
