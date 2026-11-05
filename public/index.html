@@ -1,668 +1,252 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Solstice</title>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Solstice Casino</title><link rel="icon" href="/logo.png">
 <style>
-:root{--bg:#0a0a0b;--panel:#121214;--panel2:#18181b;--line:#2a2618;--gold:#e8b931;--gold2:#f6d365;--text:#eeeae0;--muted:#8b8778;--green:#4cc38a;--red:#e5604d}
-*{box-sizing:border-box;margin:0}
-html,body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;min-height:100%}
-h1,h2,h3,.serif{font-family:Georgia,"Times New Roman",serif;font-weight:normal;letter-spacing:.5px}
+:root{--bg:#07060b;--bg2:#0f0d18;--card:#14111f;--line:#2a2440;--text:#eee9ff;--mut:#8f88aa;--gold:#f5c542;--pink:#ff2bd6;--cyan:#27e8ff;--green:#2dff9b;--red:#ff4466}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100%}
+body{background:radial-gradient(900px 500px at 85% -10%,#2a0f4a55,transparent),radial-gradient(700px 400px at -10% 110%,#00e5ff18,transparent),var(--bg)}
+h1,h2,h3,.disp{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:.5px}
 button,input,select{font:inherit;color:inherit}
-a{color:var(--gold);cursor:pointer}
+input,select{background:#0b0914;border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;outline:none}
+input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #27e8ff22}
+label{display:block;color:var(--mut);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin:12px 0 5px}
+.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--gold),#ff9d2e);color:#1a1200;transition:.15s;letter-spacing:.3px}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn.neon{background:linear-gradient(135deg,var(--pink),#8b3dff);color:#fff;box-shadow:0 0 22px #ff2bd655}
+.btn.green{background:linear-gradient(135deg,var(--green),#00b86b);color:#00180d;box-shadow:0 0 22px #2dff9b44}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:9px}
+.card{background:linear-gradient(180deg,var(--card),#0e0b17);border:1px solid var(--line);border-radius:18px;padding:18px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.grow{flex:1;min-width:120px}
+.mut{color:var(--mut)}.gold{color:var(--gold)}.green{color:var(--green)}.red{color:var(--red)}
 .hide{display:none!important}
-
-/* intro */
-#intro{position:fixed;inset:0;z-index:99;background:radial-gradient(circle at 50% 45%,#1a1608 0,#0a0a0b 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .9s ease,transform .9s ease;cursor:pointer}
-#intro.out{opacity:0;transform:scale(1.08);pointer-events:none}
-#intro .logo{width:170px;height:auto;filter:drop-shadow(0 0 0 rgba(232,185,49,0));animation:glow 2.2s ease 1.6s forwards}
-#intro .word{margin-top:26px;font-family:Georgia,serif;font-size:30px;letter-spacing:16px;padding-left:16px;color:var(--gold);opacity:0;animation:rise 1.2s ease 2s forwards}
-#intro .sub{margin-top:10px;font-size:12px;letter-spacing:5px;color:var(--muted);opacity:0;animation:rise 1s ease 2.5s forwards;text-transform:uppercase}
-.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.9s cubic-bezier(.6,.1,.3,1) forwards}
-.fillin{fill-opacity:0;animation:fillin 1s ease 1.5s forwards}
-.shine{position:absolute;inset:0;background:linear-gradient(115deg,transparent 40%,rgba(246,211,101,.14) 50%,transparent 60%);transform:translateX(-100%);animation:sweep 1.6s ease 2.1s forwards;pointer-events:none}
-@keyframes draw{to{stroke-dashoffset:0}}
-@keyframes fillin{to{fill-opacity:1}}
-@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@keyframes glow{to{filter:drop-shadow(0 0 22px rgba(232,185,49,.55))}}
-@keyframes sweep{to{transform:translateX(100%)}}
-
 /* auth */
-@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
-#auth{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;background:radial-gradient(circle at 50% 0,#17130a 0,#07070a 60%);perspective:1200px}
-#auth .bg{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
-.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;will-change:transform}
-.orb.o1{width:460px;height:460px;background:radial-gradient(circle,#e8b931,transparent 70%);top:-140px;left:-120px;animation:drift1 16s ease-in-out infinite alternate}
-.orb.o2{width:540px;height:540px;background:radial-gradient(circle,#b4501a,transparent 70%);bottom:-200px;right:-140px;animation:drift2 21s ease-in-out infinite alternate}
-.orb.o3{width:380px;height:380px;background:radial-gradient(circle,#1f6f68,transparent 70%);top:35%;left:55%;opacity:.32;animation:drift3 18s ease-in-out infinite alternate}
-@keyframes drift1{to{transform:translate(180px,130px) scale(1.25)}}
-@keyframes drift2{to{transform:translate(-200px,-110px) scale(1.15)}}
-@keyframes drift3{to{transform:translate(-160px,120px) scale(1.3)}}
-.gridfx{position:absolute;left:-50%;right:-50%;bottom:-8%;height:50%;background-image:linear-gradient(rgba(232,185,49,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(232,185,49,.2) 1px,transparent 1px);background-size:56px 56px;transform:perspective(500px) rotateX(62deg);transform-origin:50% 100%;-webkit-mask-image:linear-gradient(to top,#000,transparent 85%);mask-image:linear-gradient(to top,#000,transparent 85%);animation:gridMove 3s linear infinite;opacity:.4}
-@keyframes gridMove{to{background-position:0 56px,0 0}}
-.chip{position:absolute;left:var(--x);bottom:-90px;width:var(--s);height:var(--s);border-radius:50%;border:1px solid rgba(232,185,49,.35);display:grid;place-items:center;font:11px Georgia,serif;letter-spacing:.5px;color:rgba(246,211,101,.7);background:radial-gradient(circle at 30% 30%,rgba(246,211,101,.2),rgba(232,185,49,.03));filter:blur(var(--b));opacity:0;animation:chipUp var(--d) linear var(--dl) infinite}
-@keyframes chipUp{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:.55}90%{opacity:.55}100%{transform:translateY(-115vh) rotate(360deg);opacity:0}}
-#fx{position:absolute;inset:0;width:100%;height:100%}
-.vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.7) 100%)}
-.tilt{position:relative;z-index:2;width:100%;max-width:400px;transition:transform .2s ease-out;transform-style:preserve-3d}
-.authcard{position:relative;width:100%;text-align:center;padding:30px 28px 26px;background:linear-gradient(160deg,rgba(32,27,14,.74),rgba(14,14,16,.8) 55%);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);border:1px solid rgba(232,185,49,.16);border-radius:14px;box-shadow:0 30px 80px -20px rgba(0,0,0,.85),0 0 60px -10px rgba(232,185,49,.18),inset 0 1px 0 rgba(255,236,170,.12);animation:cardIn .9s cubic-bezier(.2,.9,.25,1) both,breathe 5s ease-in-out .9s infinite}
-@keyframes cardIn{from{opacity:0;transform:translateY(40px) scale(.94);filter:blur(8px)}to{opacity:1;transform:none;filter:blur(0)}}
-@keyframes breathe{0%,100%{box-shadow:0 30px 80px -20px rgba(0,0,0,.85),0 0 50px -10px rgba(232,185,49,.14),inset 0 1px 0 rgba(255,236,170,.12)}50%{box-shadow:0 30px 80px -20px rgba(0,0,0,.85),0 0 90px -6px rgba(232,185,49,.32),inset 0 1px 0 rgba(255,236,170,.18)}}
-.authcard::before{content:"";position:absolute;inset:-1px;border-radius:15px;padding:1.5px;background:conic-gradient(from var(--ang),transparent 0 58%,rgba(232,185,49,.05) 62%,rgba(246,211,101,.95) 80%,#fff3c4 86%,transparent 93%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 6s linear infinite;pointer-events:none}
-@keyframes spin{to{--ang:360deg}}
-.glare{position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(280px circle at var(--mx,50%) var(--my,0%),rgba(246,211,101,.13),transparent 60%)}
-.authcard .logowrap{display:inline-block;position:relative;animation:float 5s ease-in-out infinite}
-.authcard .logowrap::before{content:"";position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,rgba(232,185,49,.3),transparent 65%);animation:halo 3.2s ease-in-out infinite;z-index:-1}
-.authcard .logo{width:54px;display:block;margin:0;filter:drop-shadow(0 0 10px rgba(232,185,49,.55));animation:glowp 3.2s ease-in-out infinite}
-@keyframes float{50%{transform:translateY(-6px)}}
-@keyframes glowp{50%{filter:drop-shadow(0 0 22px rgba(246,211,101,.9))}}
-@keyframes halo{50%{transform:scale(1.25);opacity:.6}}
-.authcard h1{font-size:26px;letter-spacing:8px;padding-left:8px;margin:8px 0 4px;background:linear-gradient(100deg,#b9801a 0%,#f6d365 25%,#fff6d0 50%,#f6d365 75%,#b9801a 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:txt 5s linear infinite}
-@keyframes txt{to{background-position:-250% 0}}
-.authcard p.s{color:var(--muted);font-size:13px;margin-bottom:20px;min-height:18px}
-.tabs{position:relative;display:flex;border-bottom:1px solid rgba(232,185,49,.15);margin-bottom:10px}
-.tabs button{flex:1;background:none;border:0;padding:10px;color:var(--muted);cursor:pointer;transition:color .3s}
-.tabs button:hover{color:var(--text)}
-.tabs button.on{color:var(--gold2);text-shadow:0 0 14px rgba(232,185,49,.5)}
-.tabs .ind{position:absolute;left:0;bottom:-1px;width:50%;height:2px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);box-shadow:0 0 12px var(--gold);transition:transform .45s cubic-bezier(.7,0,.2,1)}
-.tabs[data-m=register] .ind{transform:translateX(100%)}
-label{display:block;text-align:left;font-size:12px;color:var(--muted);margin:12px 0 5px;letter-spacing:.5px;text-transform:uppercase;transition:color .25s}
-input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:11px 12px;outline:none}
-input:focus,select:focus{border-color:var(--gold)}
-.authcard input{background:rgba(6,6,8,.65);border:1px solid rgba(232,185,49,.18);border-radius:8px;padding:12px 14px;transition:border-color .25s,box-shadow .25s,background .25s}
-.authcard input:focus{border-color:rgba(246,211,101,.85);background:rgba(10,9,6,.85);box-shadow:0 0 0 3px rgba(232,185,49,.14),0 0 22px rgba(232,185,49,.22)}
-.authcard input::placeholder{color:#58554b}
-.field{position:relative}
-.field:focus-within label{color:var(--gold2)}
-.field input.hasEye{padding-right:46px}
-.field .eye{position:absolute;right:6px;bottom:6px;width:32px;height:32px;display:grid;place-items:center;background:none;border:0;color:var(--muted);cursor:pointer;border-radius:6px;transition:color .2s,background .2s}
-.field .eye:hover{color:var(--gold2);background:rgba(232,185,49,.08)}
-.field .eye.on{color:var(--gold)}
-.eye .sl{display:none}.eye.on .sl{display:block}
-.field .bar{position:absolute;left:10px;right:10px;bottom:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);transform:scaleX(0);transition:transform .4s ease;pointer-events:none}
-.field:focus-within .bar{transform:scaleX(1)}
-.meter{display:flex;gap:5px;margin-top:10px}
-.meter span{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.07);transition:background .3s,box-shadow .3s}
-.meter span.on{background:var(--c);box-shadow:0 0 8px var(--c)}
-.mtxt{font-size:11px;color:var(--muted);text-align:left;margin-top:5px;letter-spacing:.5px;min-height:14px}
-.btn{width:100%;margin-top:18px;background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1a1400;border:0;border-radius:6px;padding:12px;font-weight:600;letter-spacing:.5px;cursor:pointer}
-.btn:disabled{opacity:.5;cursor:wait}
-.btn.ghost{background:none;border:1px solid var(--line);color:var(--text);margin-top:10px}
-.authcard .btn{position:relative;overflow:hidden;border-radius:8px;padding:13px;transition:transform .2s,box-shadow .3s,filter .2s;box-shadow:0 8px 24px -8px rgba(232,185,49,.55),inset 0 1px 0 rgba(255,255,255,.35)}
-.authcard .btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.07);box-shadow:0 14px 34px -8px rgba(232,185,49,.8),inset 0 1px 0 rgba(255,255,255,.4)}
-.authcard .btn:active:not(:disabled){transform:translateY(0) scale(.985)}
-.authcard .btn::after{content:"";position:absolute;top:0;bottom:0;width:60%;left:-80%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:btnShine 3.6s ease-in-out infinite;pointer-events:none}
-@keyframes btnShine{0%,55%{left:-80%}100%{left:140%}}
-.authcard .btn.ghost{background:rgba(255,255,255,.02);border:1px solid rgba(232,185,49,.25);box-shadow:none;color:var(--text)}
-.authcard .btn.ghost::after{display:none}
-.authcard .btn.ghost:hover:not(:disabled){border-color:var(--gold);box-shadow:0 0 18px rgba(232,185,49,.2);filter:none}
-.btn.loading{color:transparent!important}
-.btn.loading:disabled{opacity:1}
-.btn.loading::before{content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border:2px solid rgba(26,20,0,.25);border-top-color:#1a1400;border-radius:50%;animation:rot .7s linear infinite;z-index:1}
-@keyframes rot{to{transform:rotate(360deg)}}
-.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.5);transform:scale(0);animation:rip .7s ease-out forwards;pointer-events:none}
-@keyframes rip{to{transform:scale(1);opacity:0}}
-.msg{min-height:18px;margin-top:12px;font-size:13px;color:var(--red)}
-.msg.ok{color:var(--green)}
-.code{letter-spacing:12px;text-align:center;font-size:24px;font-family:Georgia,serif}
-.authcard .code{padding-left:26px}
-.back{display:inline-block;margin-top:14px;font-size:13px}
-.pane form>*{animation:up .55s cubic-bezier(.2,.8,.2,1) both}
-.pane form>*:nth-child(2){animation-delay:.06s}.pane form>*:nth-child(3){animation-delay:.12s}
-.pane form>*:nth-child(4){animation-delay:.18s}.pane form>*:nth-child(5){animation-delay:.24s}.pane form>*:nth-child(6){animation-delay:.3s}
-@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
-@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
-#auth.hold,#auth.hold *,#auth.hold *::before,#auth.hold *::after{animation-play-state:paused!important}
-#auth.leaving .tilt{transform:scale(1.12)!important;opacity:0;transition:transform .55s cubic-bezier(.5,0,.2,1),opacity .5s ease}
-#auth.leaving::after{content:"";position:absolute;inset:0;z-index:5;background:radial-gradient(circle,rgba(246,211,101,.55),transparent 60%);animation:flash .55s ease forwards;pointer-events:none}
-@keyframes flash{from{opacity:0}to{opacity:1}}
-@media(max-width:600px){.orb{filter:blur(50px)}.authcard{padding:26px 20px 22px}}
-@media(prefers-reduced-motion:reduce){#auth *,#auth *::before,#auth *::after{animation:none!important;transition:none!important}}
-
-/* app */
-#app{display:flex;min-height:100vh}
-aside{width:230px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px;position:fixed;top:0;bottom:0;left:0;z-index:20;transition:transform .25s}
-.brand{display:flex;align-items:center;gap:10px;padding:0 8px 22px}
-.brand .logo{width:30px}
-.brand span{font-family:Georgia,serif;color:var(--gold);letter-spacing:5px;font-size:17px}
-nav a{display:flex;align-items:center;gap:12px;color:var(--muted);text-decoration:none;padding:11px 12px;border-radius:7px;margin-bottom:3px;font-size:14px}
-nav a:hover{background:var(--panel2);color:var(--text)}
-nav a.on{background:var(--panel2);color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
-.sbot{margin-top:auto;border-top:1px solid var(--line);padding:14px 8px 0;font-size:12px;color:var(--muted)}
-.sbot b{display:block;color:var(--text);font-family:Georgia,serif;font-size:19px;margin:2px 0 10px}
-.sbot .em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sbot a{font-size:13px}
-main{flex:1;margin-left:230px;padding:34px 36px;max-width:1100px}
-.top{display:none;position:sticky;top:0;z-index:15;background:var(--panel);border-bottom:1px solid var(--line);padding:12px 16px;align-items:center;gap:12px}
-.top button{background:none;border:0;color:var(--gold);font-size:24px;cursor:pointer}
-h2{font-size:28px;margin-bottom:6px}
-.lead{color:var(--muted);margin-bottom:24px}
-.grid{display:grid;gap:16px}
-.g3{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
-.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
-.stat small{color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-size:11px}
-.stat div{font-family:Georgia,serif;font-size:30px;margin-top:6px;color:var(--gold)}
-.hero{background:linear-gradient(135deg,#1b1608,var(--panel) 60%);border:1px solid var(--line);border-radius:10px;padding:30px;margin-bottom:18px;position:relative;overflow:hidden}
-.hero h2{color:var(--gold);font-size:32px}
-.hero .actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
-.hero .actions .btn{width:auto;margin:0;padding:11px 24px}
-table{width:100%;border-collapse:collapse}
-th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:normal}
-td{padding:12px 10px;border-bottom:1px solid #1c1a12}
-td.r,th.r{text-align:right}
-tr.click{cursor:pointer}
-tr.click:hover td{background:var(--panel2)}
-.up{color:var(--green)}.down{color:var(--red)}
-.sym{display:inline-block;width:32px;height:32px;line-height:30px;text-align:center;border:1px solid var(--gold);border-radius:50%;color:var(--gold);font-size:11px;margin-right:10px;font-family:Georgia,serif;vertical-align:middle}
-.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
-.seg button{flex:1;padding:10px;border:0;background:var(--bg);color:var(--muted);cursor:pointer}
-.seg button.buy.on{background:var(--green);color:#04170d}
-.seg button.sell.on{background:var(--red);color:#fff}
-.est{margin-top:12px;color:var(--muted);font-size:13px}
-.addr{background:var(--bg);border:1px dashed var(--gold);border-radius:6px;padding:14px;word-break:break-all;font-family:ui-monospace,Menlo,monospace;font-size:14px;margin:8px 0}
-.row{display:flex;gap:10px}
-.row>*{flex:1}
-.pill{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
-.pill.finished{color:var(--green);border-color:var(--green)}
-.pill.waiting,.pill.confirming,.pill.sending,.pill.confirmed{color:var(--gold);border-color:var(--gold)}
-.pill.failed,.pill.expired,.pill.refunded,.pill.rejected{color:var(--red);border-color:var(--red)}
-.pill.sent{color:var(--green);border-color:var(--green)}
-.pill.pending{color:var(--gold);border-color:var(--gold)}
-.mini{background:none;border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px}
-.mini.ok{border-color:var(--green);color:var(--green)}
-.mini.no{border-color:var(--red);color:var(--red)}
-.note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
-.empty{color:var(--muted);padding:18px 10px;text-align:center}
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--gold);padding:11px 20px;border-radius:6px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none}
-#toast.on{opacity:1}
+#auth{min-height:100vh;display:grid;place-items:center;padding:20px}
+#auth .card{width:min(400px,100%);text-align:center;box-shadow:0 0 60px #8b3dff22}
+#auth img{height:110px;filter:drop-shadow(0 0 18px #f5c54288)}
+#auth .disp{font-size:30px;letter-spacing:10px;margin:6px 0 2px;color:var(--gold)}
+#auth form{text-align:left}#auth .btn{width:100%;margin-top:16px}
+.tabs{display:flex;gap:6px;margin:16px 0 4px;background:#0b0914;padding:4px;border-radius:12px}
+.tabs button{flex:1;border:0;background:none;padding:9px;border-radius:9px;cursor:pointer;color:var(--mut);font-weight:700}
+.tabs button.on{background:var(--card);color:var(--gold)}
+.err{color:var(--red);min-height:20px;margin-top:10px;font-size:13px;text-align:center}
+/* shell */
+#app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+#side{background:#0a0812cc;border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;z-index:20}
+#side .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
+#side .brand img{height:38px}#side .brand b{font-size:19px;letter-spacing:4px;color:var(--gold)}
+.nav{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;cursor:pointer;color:var(--mut);font-weight:600;border:1px solid transparent}
+.nav:hover{color:var(--text);background:#ffffff08}
+.nav.on{color:#fff;background:linear-gradient(90deg,#ff2bd622,#27e8ff10);border-color:#ff2bd644;box-shadow:inset 3px 0 0 var(--pink)}
+.nav i{font-style:normal;font-size:19px;width:24px;text-align:center}
+#side .sp{flex:1}
+#top{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:12px;padding:12px 22px;background:#07060bdd;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+#burger{display:none;background:none;border:1px solid var(--line);border-radius:10px;padding:7px 11px;cursor:pointer;font-size:18px}
+#wchip{display:flex;align-items:center;gap:9px;background:#0b0914;border:1px solid var(--gold);border-radius:999px;padding:7px 8px 7px 14px;cursor:pointer;box-shadow:0 0 18px #f5c54233}
+#wchip b{color:var(--gold);font-size:16px}
+#wchip span.plus{background:var(--gold);color:#1a1200;border-radius:50%;width:26px;height:26px;display:grid;place-items:center;font-weight:900}
+#main{padding:22px;max-width:1100px;width:100%;margin:0 auto}
+/* lobby */
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:34px 28px;border:1px solid #ff2bd655;background:linear-gradient(120deg,#1b0836,#0c1030 60%,#07262e);box-shadow:0 0 50px #8b3dff33}
+.hero:after{content:"";position:absolute;right:-60px;top:-60px;width:300px;height:300px;background:radial-gradient(circle,#f5c54255,transparent 65%)}
+.hero h1{font-size:clamp(30px,6vw,52px);line-height:1.05;max-width:560px;background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:12px 0 20px;max-width:440px;color:#c9c2e6}
+.hero img{position:absolute;right:30px;bottom:14px;height:190px;filter:drop-shadow(0 0 22px #f5c542aa);z-index:1;opacity:.95}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:18px}
+.game{cursor:pointer;min-height:170px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;transition:.2s}
+.game:hover{transform:translateY(-4px);border-color:var(--cyan);box-shadow:0 10px 40px #27e8ff22}
+.game .em{position:absolute;right:14px;top:6px;font-size:76px;opacity:.9;filter:drop-shadow(0 0 16px #ff2bd699)}
+.game h3{font-size:24px}.game.mines{background:linear-gradient(160deg,#0b2a3a,#14111f)}.game.slots{background:linear-gradient(160deg,#3a0b36,#14111f)}
+.tag{display:inline-block;font-size:11px;letter-spacing:1px;background:#ffffff14;border-radius:99px;padding:3px 9px;margin-top:6px;color:var(--cyan)}
+.feed div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ffffff0d;font-size:13px}
+h2.sec{margin:26px 0 10px;font-size:20px}
+/* mines */
+.play{display:grid;grid-template-columns:290px 1fr;gap:18px}
+#mgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;max-width:480px;margin:0 auto}
+.tile{aspect-ratio:1;border-radius:14px;border:1px solid var(--line);background:linear-gradient(145deg,#1d1830,#110e1c);font-size:clamp(22px,5vw,36px);cursor:pointer;transition:.12s;display:grid;place-items:center}
+.tile:hover:not(:disabled){border-color:var(--cyan);box-shadow:0 0 18px #27e8ff44;transform:scale(1.04)}
+.tile.safe{background:linear-gradient(145deg,#0b4a35,#0a2a22);border-color:var(--green);box-shadow:0 0 18px #2dff9b44;animation:pop .25s}
+.tile.mine{background:linear-gradient(145deg,#5a0f26,#2a0a14);border-color:var(--red);animation:pop .25s}
+.tile.dim{opacity:.45}
+@keyframes pop{0%{transform:scale(.7)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+.big{font-family:Georgia,serif;font-size:34px;font-weight:700}
+.stat{background:#0b0914;border:1px solid var(--line);border-radius:12px;padding:10px 12px;flex:1;min-width:110px}
+.stat small{display:block;color:var(--mut);font-size:11px;letter-spacing:1px;text-transform:uppercase}
+/* slots */
+.machine{background:linear-gradient(180deg,#2a0b3a,#0e0b17);border:2px solid var(--gold);border-radius:24px;padding:22px;box-shadow:0 0 50px #f5c54244,inset 0 0 40px #ff2bd622;max-width:520px;margin:0 auto}
+.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:#05040a;padding:12px;border-radius:16px;border:1px solid var(--line)}
+.cell{aspect-ratio:1;display:grid;place-items:center;font-size:clamp(34px,9vw,58px);border-radius:12px;background:#12101c;transition:.15s}
+.cell.win{background:#f5c54233;box-shadow:0 0 22px var(--gold);transform:scale(1.06)}
+.spinning .cell{filter:blur(2px);opacity:.8}
+.winbar{text-align:center;min-height:34px;margin-top:14px;font-family:Georgia,serif;font-size:22px}
+/* misc */
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid #ffffff0d}th{color:var(--mut);font-weight:600;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpis .stat b{font-size:22px;font-family:Georgia,serif}
+.box{word-break:break-all;background:#0b0914;border:1px dashed var(--gold);border-radius:10px;padding:10px;margin:6px 0;font-family:monospace;font-size:13px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1c1730;border:1px solid var(--cyan);padding:11px 18px;border-radius:12px;z-index:99;opacity:0;pointer-events:none;transition:.25s}
+#toast.show{opacity:1}#toast.bad{border-color:var(--red)}
 @media(max-width:820px){
-  aside{transform:translateX(-100%)}
-  aside.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.6)}
-  main{margin-left:0;padding:22px 16px}
-  .top{display:flex}
-  .hero{padding:22px}
+ #app{grid-template-columns:1fr}
+ #side{position:fixed;left:0;top:0;width:250px;transform:translateX(-105%);transition:.25s;box-shadow:10px 0 40px #000}
+ #side.open{transform:none}#burger{display:block}
+ .play{grid-template-columns:1fr}.hero img{height:110px;right:10px;opacity:.35}#main{padding:14px}
 }
+</style></head><body>
+<div id="auth" class="hide"><div class="card">
+ <img src="/logo.png" alt=""><div class="disp">SOLSTICE</div><div class="mut" style="font-size:13px;letter-spacing:3px">CASINO</div>
+ <div class="tabs" id="atabs"><button class="on" data-m="login">Sign in</button><button data-m="register">Create account</button></div>
+ <form id="af" autocomplete="on">
+  <div id="a1"><label>Email</label><input id="em" type="email" autocomplete="email" required>
+   <label>Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+  <div id="a2" class="hide"><p class="mut" style="margin-top:14px">We emailed you a 6-digit code.</p><label>Code</label><input id="cd" inputmode="numeric" maxlength="6" style="text-align:center;font-size:24px;letter-spacing:10px"></div>
+  <button class="btn neon" id="abtn">Sign in</button><div class="err" id="aerr"></div>
+ </form><p class="mut" style="font-size:11px;margin-top:8px">18+ only. Play responsibly.</p>
+</div></div>
 
-/* ---- performance overrides (removes the GPU-heavy effects) ---- */
-.orb{filter:none!important;will-change:auto}
-.chip{filter:none!important}
-.authcard{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:linear-gradient(160deg,rgba(28,24,13,.94),rgba(14,14,16,.96) 55%)!important;animation:cardIn .6s ease-out both!important}
-@keyframes cardIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
-.authcard::before{animation:none!important;--ang:40deg}
-.gridfx{animation:none!important}
-.authcard .logo{animation:none!important}
-.authcard .logowrap::before{animation:none!important}
-@media(max-width:600px){.orb.o3,.gridfx,.chip{display:none!important}.orb.o1{width:300px;height:300px}.orb.o2{width:340px;height:340px}}
-.spamhint{text-align:center;margin-top:14px}.spamhint b{color:var(--gold2)}
-</style>
-</head>
-<body>
-
-<div id="intro" title="Tap to skip"></div>
-<div id="auth" class="hide"></div>
 <div id="app" class="hide">
-  <aside id="side">
-    <div class="brand" id="brand"></div>
-    <nav>
-      <a href="#home" data-v="home">&#9962;&nbsp; Home</a>
-      <a href="#trade" data-v="trade">&#8645;&nbsp; Trade</a>
-      <a href="#deposit" data-v="deposit">&#8595;&nbsp; Deposit</a>
-      <a href="#withdraw" data-v="withdraw">&#8593;&nbsp; Withdraw</a>
-      <a href="#portfolio" data-v="portfolio">&#9776;&nbsp; Portfolio</a>
-      <a href="#admin" data-v="admin" id="navadmin" class="hide">&#9881;&nbsp; Admin</a>
-    </nav>
-    <div class="sbot">
-      <div class="em" id="semail"></div>
-      <small>Balance</small>
-      <b id="sbal">$0.00</b>
-      <a id="logout">Sign out</a>
-    </div>
-  </aside>
-  <div style="flex:1;min-width:0">
-    <div class="top"><button id="menu">&#9776;</button><span class="serif" style="color:var(--gold);letter-spacing:5px">SOLSTICE</span></div>
-    <main id="view"></main>
-  </div>
-</div>
-<div id="toast"></div>
-
+ <aside id="side"><div class="brand"><img src="/logo.png" alt=""><b>SOLSTICE</b></div>
+  <div class="nav on" data-v="lobby"><i>🏠</i>Lobby</div>
+  <div class="nav" data-v="mines"><i>💣</i>Mines</div>
+  <div class="nav" data-v="slots"><i>🎰</i>Slots</div>
+  <div class="nav" data-v="wallet"><i>👛</i>Wallet</div>
+  <div class="nav" data-v="history"><i>🧾</i>My bets</div>
+  <div class="nav hide" data-v="admin"><i>🛡️</i>Admin</div>
+  <div class="sp"></div><div class="mut" id="who" style="font-size:12px;padding:0 10px;word-break:break-all"></div>
+  <div class="nav" id="logout"><i>🚪</i>Sign out</div></aside>
+ <div><div id="top"><button id="burger">☰</button><div class="grow"></div>
+  <div id="wchip" title="Wallet"><span>👛</span><b id="bal">$0.00</b><span class="plus">+</span></div></div>
+  <div id="main"></div></div>
+</div><div id="toast"></div>
 <script>
-/* ---------- logo (gold S, crown, bar) ---------- */
-function logo(animated){
-  const d = animated ? 'draw' : '', f = animated ? 'fillin' : '';
-  const a = animated ? ' pathLength="1"' : '';
-  return `<svg class="logo" viewBox="60 0 280 560" xmlns="http://www.w3.org/2000/svg">
-  <defs><linearGradient id="g${animated?1:0}" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#f6d365"/><stop offset=".5" stop-color="#e8b931"/><stop offset="1" stop-color="#c8921a"/></linearGradient></defs>
-  <g stroke="url(#g${animated?1:0})" fill="url(#g${animated?1:0})" stroke-linecap="round" stroke-linejoin="round">
-    <path class="${d} ${f}"${a} stroke-width="3" d="M112 158 L88 74 L152 116 L200 18 L248 116 L312 74 L288 158 Q200 138 112 158 Z"/>
-    <path class="${d}"${a} fill="none" stroke-width="7" d="M114 176 Q200 154 286 176"/>
-    <path class="${d}"${a} fill="none" stroke-width="4" d="M124 192 Q200 174 276 192"/>
-    <path class="${d}"${a} fill="none" stroke-width="15" d="M200 196 V508"/>
-    <path class="${d} ${f}"${a} stroke-width="3" d="M200 502 L182 524 L200 552 L218 524 Z"/>
-    <path class="${d}"${a} fill="none" stroke-width="30" d="M296 262 C284 204 108 200 108 284 C108 358 296 346 296 428 C296 508 118 498 106 438"/>
-    <path class="${d}"${a} fill="none" stroke-width="2.5" d="M312 254 C300 188 90 184 90 284 C90 372 276 360 276 424 C276 480 150 500 94 470"/>
-  </g></svg>`;
-}
-
-/* ---------- tiny helpers ---------- */
-const $ = (s, r=document) => r.querySelector(s);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const usd = n => '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const qtyf = n => Number(n).toLocaleString('en-US',{maximumFractionDigits:8});
-let toastT; function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2600)}
-async function api(path, body){
-  let r;
-  try{ r = await fetch('/api/'+path, body===undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
-  catch(e){ throw new Error('Cannot reach the server. Check your connection and try again.'); }
-  const isJson = (r.headers.get('content-type')||'').includes('json');
-  const j = isJson ? await r.json().catch(()=>({})) : {};
-  if(!r.ok || !isJson){
-    const msg = j.error || (r.status===404 || r.ok ? 'Server API not found. Make sure vercel.json is deployed.' : 'Server error ('+r.status+'). Check your Vercel function logs.');
-    const e = new Error(msg); e.status = r.status; throw e;
-  }
-  return j;
-}
-
-/* ---------- intro ---------- */
-let introDone = false;
-function runIntro(){
-  const el = $('#intro');
-  el.innerHTML = `<div class="shine"></div>${logo(true)}<div class="word">SOLSTICE</div><div class="sub">Trade with confidence</div>`;
-  let done = false;
-  const end = () => { if(done) return; done = true; introDone = true; document.dispatchEvent(new Event('introdone')); el.classList.add('out'); setTimeout(()=>el.remove(), 1000); };
-  el.addEventListener('click', end);
-  setTimeout(end, 4300);
-}
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'$'+Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let me=null,view='lobby',busy=false,poll=null;
+async function api(p,b){const r=await fetch('/api/'+p,b===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+ let j={};try{j=await r.json()}catch(e){}if(!r.ok){const e=new Error(j.error||'Request failed');e.status=r.status;throw e}return j}
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.className='show'+(bad?' bad':'');clearTimeout(t.h);t.h=setTimeout(()=>t.className='',2600)}
+const guard=fn=>async(...a)=>{if(busy)return;busy=true;try{await fn(...a)}catch(e){toast(e.message,1);if(e.status===401)boot()}finally{busy=false}};
+function setBal(n){me.balance=n;$('#bal').textContent=money(n)}
+async function refreshMe(){const m=await api('me');me=m;setBal(m.balance)}
 
 /* ---------- auth ---------- */
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const COIN_CHIPS = ['BTC','ETH','SOL','BNB','XRP','LTC','DOGE','TRX','BTC','ETH'];
-const EYE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path class="sl" d="M3 3l18 18"/></svg>';
+let amode='login',pending=null;
+$$('#atabs button').forEach(b=>b.onclick=()=>{amode=b.dataset.m;pending=null;$$('#atabs button').forEach(x=>x.classList.toggle('on',x===b));
+ $('#a1').classList.remove('hide');$('#a2').classList.add('hide');$('#abtn').textContent=amode==='login'?'Sign in':'Create account';$('#aerr').textContent='';
+ $('#pw').autocomplete=amode==='login'?'current-password':'new-password'});
+$('#af').onsubmit=async e=>{e.preventDefault();const btn=$('#abtn');btn.disabled=true;$('#aerr').textContent='';
+ try{const email=$('#em').value,password=$('#pw').value;
+  if(pending){await api('verify',{email:pending,code:$('#cd').value});return boot()}
+  if(amode==='login'){await api('login',{email,password});return boot()}
+  await api('register',{email,password});pending=email;$('#a1').classList.add('hide');$('#a2').classList.remove('hide');$('#abtn').textContent='Verify & enter'
+ }catch(x){$('#aerr').textContent=x.message}finally{btn.disabled=false}};
+async function boot(){try{await refreshMe();$('#auth').classList.add('hide');$('#app').classList.remove('hide');
+  $('#who').textContent=me.email;$('[data-v=admin]').classList.toggle('hide',!me.admin);go(view)}
+ catch(e){$('#app').classList.add('hide');$('#auth').classList.remove('hide')}}
+$('#logout').onclick=async()=>{await api('logout',{});me=null;boot()};
 
-function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
-function ripple(btn){
-  btn.addEventListener('pointerdown', e => {
-    const r = btn.getBoundingClientRect(), s = document.createElement('span'), d = Math.max(r.width, r.height) * 2;
-    s.className = 'rip';
-    s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d/2}px;top:${e.clientY - r.top - d/2}px`;
-    btn.appendChild(s); setTimeout(() => s.remove(), 700);
-  });
-}
+/* ---------- shell ---------- */
+$$('.nav[data-v]').forEach(n=>n.onclick=()=>go(n.dataset.v));
+$('#wchip').onclick=()=>go('wallet');$('#burger').onclick=()=>$('#side').classList.toggle('open');
+function go(v){view=v;clearInterval(poll);$('#side').classList.remove('open');$$('.nav[data-v]').forEach(n=>n.classList.toggle('on',n.dataset.v===v));
+ ({lobby:lobby,mines:mines,slots:slots,wallet:wallet,history:history_,admin:admin})[v]();scrollTo(0,0)}
 
-/* background VFX: rising gold embers, a live price line, click sparks */
-function startFx(cv, host, mouse){
-  const ctx = cv.getContext('2d');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const dpr = window.innerWidth < 600 ? 1 : Math.min(window.devicePixelRatio || 1, 2);
-  let W = 0, H = 0;
-  const size = () => { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
-  size();
-  const mk = init => ({ x: Math.random() * W, y: init ? Math.random() * H : H + 10, r: .5 + Math.random() * 2,
-    vy: .15 + Math.random() * .55, vx: (Math.random() - .5) * .25, ph: Math.random() * 6.28, tw: .01 + Math.random() * .03 });
-  const P = Array.from({ length: W < 600 ? 18 : 60 }, () => mk(true));
-  const B = [];
-  const STEP = 16; let pts = [], off = 0, v = .5;
-  const cnt = () => Math.ceil(W / STEP) + 3;
-  const nextV = () => { v += (Math.random() - .47) * .09; v = Math.max(.08, Math.min(.92, v)); return v; };
-  while (pts.length < cnt()) pts.push(nextV());
-  let last = 0;
+/* ---------- lobby ---------- */
+async function lobby(){
+ $('#main').innerHTML=`<div class="hero"><img src="/logo.png" alt=""><h1>Where the house glows gold.</h1><p>Provably simple odds, instant payouts to your wallet balance. Pick a game and play.</p>
+ <div class="row"><button class="btn neon" onclick="go('mines')">Play Mines</button><button class="btn" onclick="go('slots')">Spin Slots</button></div></div>
+ <div class="grid2"><div class="card game mines" onclick="go('mines')"><div class="em">💣</div><h3>Mines</h3><span class="mut">Pick gems, dodge bombs, cash out anytime.</span><span class="tag">UP TO 24 MINES · 3% EDGE</span></div>
+ <div class="card game slots" onclick="go('slots')"><div class="em">🎰</div><h3>Slots</h3><span class="mut">3 reels, 5 paylines, jackpot 💎💎💎.</span><span class="tag">96.8% RTP</span></div></div>
+ <h2 class="sec">Live bets</h2><div class="card feed" id="feed"><span class="mut">Loading…</span></div>`;
+ const draw=async()=>{try{const f=await api('feed');const el=$('#feed');if(!el)return;el.innerHTML=f.length?f.map(x=>`<div><span>${esc(x.u)} · ${x.game==='mines'?'💣':'🎰'} ${esc(x.game)}</span><span class="${x.payout>x.bet?'green':'mut'}">${money(x.bet)} → ${money(x.payout)}</span></div>`).join(''):'<span class="mut">No bets yet — be the first.</span>'}catch(e){}};
+ draw();poll=setInterval(draw,6000)}
 
-  const draw = dt => {
-    ctx.clearRect(0, 0, W, H);
-    off += .35 * dt;
-    if (off >= STEP) { off -= STEP; pts.shift(); pts.push(nextV()); }
-    while (pts.length < cnt()) pts.push(nextV());
-    const top = H * .5, hh = H * .4;
-    ctx.beginPath();
-    pts.forEach((p, i) => { const x = i * STEP - off, y = top + (1 - p) * hh; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
-    const lg = ctx.createLinearGradient(0, 0, W, 0);
-    lg.addColorStop(0, 'rgba(232,185,49,0)'); lg.addColorStop(.5, 'rgba(246,211,101,.55)'); lg.addColorStop(1, 'rgba(232,185,49,.05)');
-    ctx.strokeStyle = lg; ctx.lineWidth = 2; ctx.lineJoin = 'round';
-    if (W >= 600) { ctx.shadowColor = 'rgba(232,185,49,.6)'; ctx.shadowBlur = 14; }
-    ctx.stroke(); ctx.shadowBlur = 0;
-    ctx.lineTo((pts.length - 1) * STEP - off, H); ctx.lineTo(-off, H); ctx.closePath();
-    const fg = ctx.createLinearGradient(0, top, 0, H);
-    fg.addColorStop(0, 'rgba(232,185,49,.12)'); fg.addColorStop(1, 'rgba(232,185,49,0)');
-    ctx.fillStyle = fg; ctx.fill();
+/* ---------- mines ---------- */
+let mg=null,mEnd=null;
+async function mines(){
+ $('#main').innerHTML=`<div class="play"><div class="card"><h2>Mines</h2>
+  <label>Bet (USD)</label><input id="mbet" type="number" min="0.1" step="0.1" value="1">
+  <div class="row" style="margin-top:6px">${[.5,2,'½','2×'].slice(2).map(x=>`<button class="btn ghost sm" data-k="${x}">${x}</button>`).join('')}</div>
+  <label>Mines</label><select id="mcount">${[...Array(24)].map((_,i)=>`<option ${i==2?'selected':''}>${i+1}</option>`).join('')}</select>
+  <button class="btn neon" id="mgo" style="width:100%;margin-top:16px">Start game</button>
+  <button class="btn green" id="mcash" style="width:100%;margin-top:10px" disabled>Cash out</button>
+  <div class="row" style="margin-top:14px"><div class="stat"><small>Multiplier</small><b id="mmult">1.00×</b></div><div class="stat"><small>Next</small><b id="mnext">—</b></div></div>
+  <div class="winbar" id="mmsg" style="font-size:18px"></div></div>
+  <div class="card"><div id="mgrid"></div></div></div>`;
+ $$('[data-k]').forEach(b=>b.onclick=()=>{const i=$('#mbet');i.value=Math.max(.1,Math.min(1000,(b.dataset.k==='½'?i.value/2:i.value*2))).toFixed(2)});
+ $('#mgo').onclick=guard(async()=>{mEnd=null;mg=await api('mines/start',{bet:$('#mbet').value,mines:$('#mcount').value});await refreshMe();mDraw()});
+ $('#mcash').onclick=guard(async()=>{mg=await api('mines/cashout',{});mEnd=mg;await refreshMe();mDraw()});
+ try{mg=await api('mines/state');if(mg.active){$('#mbet').value=mg.bet;$('#mcount').value=mg.mines}}catch(e){mg=null}mDraw()}
+function mDraw(){const act=mg&&mg.active;const g=$('#mgrid');if(!g)return;
+ g.innerHTML=[...Array(25)].map((_,i)=>{let c='tile',t='',d='';const rev=mg&&mg.revealed&&mg.revealed.includes(i),isM=mg&&mg.minePositions&&mg.minePositions.includes(i);
+  if(rev){c+=' safe';t='💎'}else if(isM){c+=' mine'+(mEnd&&mEnd.tile===i?'':' dim');t='💣'}
+  if(!act)d='disabled';return `<button class="${c}" data-t="${i}" ${d}>${t}</button>`}).join('');
+ $$('#mgrid .tile').forEach(b=>b.onclick=guard(async()=>{const r=await api('mines/reveal',{tile:+b.dataset.t});mg=r;if(!r.active){mEnd=r;await refreshMe()}mDraw()}));
+ $('#mgo').disabled=act;$('#mcash').disabled=!(act&&mg.safe>0);$('#mbet').disabled=$('#mcount').disabled=act;
+ $('#mmult').textContent=(mg&&mg.mult?mg.mult:1).toFixed(2)+'×';$('#mnext').textContent=act?mg.next.toFixed(2)+'×':'—';
+ const m=$('#mmsg');if(act){m.className='winbar';m.textContent=mg.safe?`Cash out: ${money(mg.bet*mg.mult)}`:'Pick a tile'}
+ else if(mEnd){m.className='winbar '+(mEnd.boom?'red':'green');m.textContent=mEnd.boom?'💥 Boom! You hit a mine':`Won ${money(mEnd.payout)}`}else m.textContent=''}
 
-    for (const p of P) {
-      p.ph += p.tw * dt; p.y -= p.vy * dt; p.x += (p.vx + Math.sin(p.ph) * .25) * dt;
-      const dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy;
-      if (d2 < 14400) { const d = Math.sqrt(d2) || 1, f = (120 - d) / 120; p.x += dx / d * f * 3 * dt; p.y += dy / d * f * 3 * dt; }
-      if (p.y < -10 || p.x < -10 || p.x > W + 10) Object.assign(p, mk(false));
-      const a = .25 + .55 * Math.abs(Math.sin(p.ph * 2));
-      ctx.fillStyle = `rgba(246,211,101,${a * .18})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 3.2, 0, 6.283); ctx.fill();
-      ctx.fillStyle = `rgba(255,236,170,${a})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
-    }
-    while (mouse.clicks.length) {
-      const c = mouse.clicks.pop();
-      for (let i = 0; i < 16; i++) { const a = Math.random() * 6.283, s = 1 + Math.random() * 3.2; B.push({ x: c.x, y: c.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1 }); }
-    }
-    for (let i = B.length - 1; i >= 0; i--) {
-      const b = B[i]; b.x += b.vx * dt; b.y += b.vy * dt; b.vx *= .96; b.vy = b.vy * .96 + .03 * dt; b.life -= .022 * dt;
-      if (b.life <= 0) { B.splice(i, 1); continue; }
-      ctx.fillStyle = `rgba(255,226,140,${b.life})`; ctx.beginPath(); ctx.arc(b.x, b.y, 1 + b.life * 1.6, 0, 6.283); ctx.fill();
-    }
-  };
+/* ---------- slots ---------- */
+const SYM=['💎','7️⃣','🔔','🍇','🍋','🍒'],LINES=[[0,0,0],[1,1,1],[2,2,2],[0,1,2],[2,1,0]];
+function slots(){
+ $('#main').innerHTML=`<div class="machine"><h2 class="disp gold" style="text-align:center;margin-bottom:12px">✦ SOLSTICE SLOTS ✦</h2>
+  <div class="reels" id="reels">${[...Array(9)].map(()=>'<div class="cell">🎰</div>').join('')}</div>
+  <div class="winbar" id="swin"></div>
+  <div class="row" style="margin-top:8px"><div class="grow"><label>Bet per spin</label><input id="sbet" type="number" min="0.1" step="0.1" value="1"></div>
+  <button class="btn neon" id="sgo" style="flex:1;min-width:140px;align-self:flex-end;padding:15px;font-size:17px">SPIN</button></div>
+  <p class="mut" style="font-size:12px;margin-top:12px;text-align:center">5 paylines · 3 in a row: 🍒10× 🍋17× 🍇26× 🔔47× 7️⃣135× 💎360× (of line bet = bet ÷ 5)</p></div>`;
+ const cells=()=>$$('#reels .cell');
+ $('#sgo').onclick=guard(async()=>{const go=$('#sgo');go.disabled=true;$('#swin').textContent='';cells().forEach(c=>c.classList.remove('win'));
+  const R=$('#reels');R.classList.add('spinning');const tick=setInterval(()=>cells().forEach(c=>c.textContent=SYM[Math.random()*6|0]),70);
+  try{const [r]=await Promise.all([api('slots/spin',{bet:$('#sbet').value}),sleep(900)]);clearInterval(tick);R.classList.remove('spinning');
+   cells().forEach((c,i)=>c.textContent=r.grid[i%3][(i/3)|0]);
+   r.wins.forEach(w=>LINES[w.line].forEach((row,reel)=>cells()[row*3+reel].classList.add('win')));
+   const sw=$('#swin');sw.className='winbar '+(r.payout>0?'green':'mut');sw.textContent=r.payout>0?`WIN ${money(r.payout)}!`:'No win — spin again';await refreshMe()
+  }catch(e){clearInterval(tick);R.classList.remove('spinning');throw e}finally{go.disabled=false}})}
 
-  const frame = t => {
-    if (!cv.isConnected || host.classList.contains('hide')) { window.removeEventListener('resize', size); return; }
-    requestAnimationFrame(frame);
-    const dt = Math.min(2.5, (t - last) / 16.7 || 1); last = t;
-    draw(dt);
-  };
-  window.addEventListener('resize', size);
-  if (reduce) { draw(0); return; }
-  requestAnimationFrame(frame);
-}
+/* ---------- wallet ---------- */
+async function wallet(){
+ const coins=await api('coins').catch(()=>[]);
+ $('#main').innerHTML=`<h2>Wallet</h2><div class="card" style="margin:12px 0"><div class="mut">Balance</div><div class="big gold">${money(me.balance)}</div></div>
+ <div class="grid2"><div class="card"><h3>Deposit</h3><label>Coin</label><select id="dc">${coins.filter(c=>c.deposit).map(c=>`<option value="${c.code}">${esc(c.label)}</option>`).join('')||'<option value="">No coins available</option>'}</select>
+  <label>Amount (USD, $10+)</label><input id="da" type="number" min="10" value="25"><button class="btn" id="dgo" style="width:100%;margin-top:14px">Get deposit address</button><div id="dbox"></div></div>
+ <div class="card"><h3>Withdraw</h3><label>Coin</label><select id="wc">${coins.map(c=>`<option value="${c.code}">${esc(c.label)} · fee $${c.fee}</option>`).join('')}</select>
+  <label>Amount (USD, $10+)</label><input id="wa" type="number" min="10" value="20"><label>Your address</label><input id="wad" placeholder="Paste address">
+  <button class="btn ghost" id="wgo" style="width:100%;margin-top:14px">Request withdrawal</button></div></div>
+ <h2 class="sec">Deposits</h2><div class="card" id="dl"></div><h2 class="sec">Withdrawals</h2><div class="card" id="wl"></div>`;
+ $('#dgo').onclick=guard(async()=>{const d=await api('deposit',{coin:$('#dc').value,amount:$('#da').value});showDep(d);lists()});
+ $('#wgo').onclick=guard(async()=>{await api('withdraw',{coin:$('#wc').value,amount:$('#wa').value,address:$('#wad').value});toast('Withdrawal requested');await refreshMe();wallet()});
+ lists();poll=setInterval(lists,15000)}
+function showDep(d){$('#dbox').innerHTML=`<p class="mut" style="margin-top:12px">Send <b>exactly</b> this amount (it identifies your deposit):</p><div class="box gold">${esc(d.payAmount)} ${esc(d.payCurrency)}</div>
+ <p class="mut">To address:</p><div class="box">${esc(d.address)}</div><label>After sending, paste the transaction ID</label><input id="dtx"><button class="btn green" id="dtb" style="width:100%;margin-top:10px">Submit transaction</button>`;
+ $('#dtb').onclick=guard(async()=>{await api('deposit/tx',{id:d.id,txid:$('#dtx').value});toast('Transaction submitted');$('#dbox').innerHTML='';lists()})}
+async function lists(){try{const [d,w]=await Promise.all([api('deposits'),api('withdrawals')]);const dl=$('#dl'),wl=$('#wl');if(!dl)return;
+ dl.innerHTML=d.length?`<table><tr><th>When</th><th>Coin</th><th>USD</th><th>Status</th></tr>${d.map(x=>`<tr><td>${new Date(x.ts).toLocaleString()}</td><td>${esc(x.payCurrency)}</td><td>${money(x.usd)}</td><td>${esc(x.status)}${x.status==='confirming'?` (${x.confirmations||0})`:''}</td></tr>`).join('')}</table>`:'<span class="mut">No deposits yet.</span>';
+ wl.innerHTML=w.length?`<table><tr><th>When</th><th>Coin</th><th>USD</th><th>Status</th></tr>${w.map(x=>`<tr><td>${new Date(x.ts).toLocaleString()}</td><td>${esc(x.sym)}</td><td>${money(x.usd)}</td><td>${esc(x.status)}</td></tr>`).join('')}</table>`:'<span class="mut">No withdrawals yet.</span>';
+ if(d.some(x=>x.status==='finished'))refreshMe()}catch(e){}}
 
-function showAuth(){
-  $('#app').classList.add('hide');
-  const box = $('#auth'); box.classList.remove('hide', 'leaving');
-  if (!introDone) { box.classList.add('hold'); document.addEventListener('introdone', () => box.classList.remove('hold'), { once: true }); }
-  let mode = 'login', pendingEmail = '';
-  const mouse = { x: -999, y: -999, clicks: [] };
+/* ---------- history ---------- */
+async function history_(){const h=await api('history');
+ $('#main').innerHTML=`<h2>My bets</h2><div class="card" style="margin-top:12px">${h.length?`<table><tr><th>When</th><th>Game</th><th>Bet</th><th>Payout</th></tr>${h.map(x=>`<tr><td>${new Date(x.t).toLocaleString()}</td><td>${esc(x.game)}</td><td>${money(x.bet)}</td><td class="${x.payout>x.bet?'green':'mut'}">${money(x.payout)}</td></tr>`).join('')}</table>`:'<span class="mut">No bets yet.</span>'}</div>`}
 
-  const chips = COIN_CHIPS.map((c, i) => `<span class="chip" style="--x:${(i * 10 + Math.random() * 8).toFixed(1)}%;--s:${34 + Math.random() * 30 | 0}px;--d:${(14 + Math.random() * 16).toFixed(1)}s;--dl:-${(Math.random() * 20).toFixed(1)}s;--b:${(Math.random() * 3).toFixed(1)}px">${c}</span>`).join('');
-  box.innerHTML = `<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="gridfx"></div>${chips}<canvas id="fx"></canvas><div class="vig"></div></div>
-    <div class="tilt" id="tilt"><div class="card authcard" id="ac"><div class="glare"></div>
-      <div class="logowrap">${logo(false)}</div><h1 id="ah">SOLSTICE</h1><p class="s" id="as"></p><div id="bd"></div></div></div>`;
+/* ---------- admin ---------- */
+async function admin(){
+ if(!me.admin)return go('lobby');
+ const [s,u,w,l]=await Promise.all([api('admin/stats'),api('admin/users'),api('admin/withdrawals'),api('admin/log')]);
+ $('#main').innerHTML=`<h2>🛡️ Admin</h2><div class="kpis" style="margin:12px 0"><div class="stat"><small>Users</small><b>${s.users}</b></div><div class="stat"><small>Bets</small><b>${s.bets}</b></div><div class="stat"><small>Wagered</small><b>${money(s.wagered)}</b></div><div class="stat"><small>Paid out</small><b>${money(s.paid)}</b></div><div class="stat"><small>House profit</small><b class="${s.profit>=0?'green':'red'}">${money(s.profit)}</b></div></div>
+ <h2 class="sec">Pending withdrawals (${w.length})</h2><div class="card">${w.length?w.map(x=>`<div style="padding:10px 0;border-bottom:1px solid #ffffff0d"><b>${x.amount} ${esc(x.sym)}</b> <span class="mut">(${money(x.usd)}) · ${esc(x.email)}</span><div class="box">${esc(x.address)}</div>
+  <div class="row"><input class="grow" placeholder="Transaction ID (optional)" id="tx${x.id}"><button class="btn green sm" data-s="${x.id}">Mark sent</button><button class="btn ghost sm" data-r="${x.id}">Reject + refund</button></div></div>`).join(''):'<span class="mut">Nothing pending.</span>'}</div>
+ <h2 class="sec">Adjust a balance</h2><div class="card row"><input class="grow" id="ae" placeholder="user email"><input style="width:130px" id="aa" type="number" step="0.01" placeholder="± USD"><input class="grow" id="an" placeholder="note"><button class="btn sm" id="ago">Apply</button></div>
+ <h2 class="sec">Users</h2><div class="card" style="overflow:auto"><table><tr><th>Email</th><th>Balance</th></tr>${u.map(x=>`<tr><td>${esc(x.email)}</td><td>${money(x.balance)}</td></tr>`).join('')}</table></div>
+ <h2 class="sec">Admin log</h2><div class="card">${l.length?l.map(x=>`<div class="mut" style="font-size:12px">${new Date(x.t).toLocaleString()} · ${esc(x.by)} → ${esc(x.email)} ${x.amount>0?'+':''}${x.amount} ${esc(x.note)}</div>`).join(''):'<span class="mut">Empty.</span>'}</div>`;
+ $$('[data-s]').forEach(b=>b.onclick=guard(async()=>{await api('admin/withdrawals/sent',{id:b.dataset.s,txid:$('#tx'+b.dataset.s).value});toast('Marked sent');admin()}));
+ $$('[data-r]').forEach(b=>b.onclick=guard(async()=>{if(!confirm('Reject and refund?'))return;await api('admin/withdrawals/reject',{id:b.dataset.r});toast('Rejected');admin()}));
+ $('#ago').onclick=guard(async()=>{await api('admin/adjust',{email:$('#ae').value,amount:$('#aa').value,note:$('#an').value});toast('Balance updated');admin()})}
 
-  const tilt = $('#tilt'), card = $('#ac');
-  const fine = matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
-  box.onpointermove = e => {
-    const cr = $('#fx').getBoundingClientRect(); mouse.x = e.clientX - cr.left; mouse.y = e.clientY - cr.top;
-    if (!fine) return;
-    const r = card.getBoundingClientRect(), dx = (e.clientX - (r.left + r.width / 2)) / innerWidth, dy = (e.clientY - (r.top + r.height / 2)) / innerHeight;
-    tilt.style.transform = `rotateY(${dx * 10}deg) rotateX(${-dy * 10}deg)`;
-    card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-    card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
-  };
-  box.onpointerleave = () => { mouse.x = mouse.y = -999; tilt.style.transform = ''; };
-  box.onpointerdown = e => { const cr = $('#fx').getBoundingClientRect(); mouse.clicks.push({ x: e.clientX - cr.left, y: e.clientY - cr.top }); };
-  startFx($('#fx'), box, mouse);
-
-  const goIn = async () => { box.classList.add('leaving'); await sleep(550); await boot(); };
-
-  const tabsHTML = () => `<div class="tabs" data-m="${mode}"><button type="button" data-m="login" class="${mode==='login'?'on':''}">Sign in</button><button type="button" data-m="register" class="${mode==='register'?'on':''}">Create account</button><i class="ind"></i></div>`;
-  const paneHTML = () => `<form id="f">
-      <div class="field"><label>Email</label><input id="em" type="email" autocomplete="email" required placeholder="you@example.com"><i class="bar"></i></div>
-      <div class="field"><label>Password</label><input id="pw" class="hasEye" type="password" autocomplete="${mode==='login'?'current-password':'new-password'}" minlength="${mode==='login'?1:8}" required placeholder="${mode==='register'?'At least 8 characters':'Your password'}"><button type="button" class="eye" id="eye" aria-label="Show or hide password">${EYE}</button><i class="bar"></i></div>
-      ${mode==='register' ? '<div><div class="meter" id="mt"><span></span><span></span><span></span><span></span></div><div class="mtxt" id="mtx">Use 8+ characters</div></div>' : '<div></div>'}
-      <button class="btn" id="go">${mode==='login'?'Sign in':'Send verification code'}</button>
-      <div class="msg" id="msg"></div></form>
-      <p class="note spamhint">Verification codes are sent by email. Don't see it in your inbox? Check your <b>spam / junk</b> folder.</p>`;
-
-  const wirePane = () => {
-    const pw = $('#pw'), eye = $('#eye');
-    eye.onclick = () => { const s = pw.type === 'password'; pw.type = s ? 'text' : 'password'; eye.classList.toggle('on', s); };
-    if (mode === 'register') pw.addEventListener('input', () => {
-      const v = pw.value;
-      const sc = Math.min(4, (v.length >= 8) + (v.length >= 12) + (/[a-z]/.test(v) && /[A-Z]/.test(v)) + /\d/.test(v) + /[^A-Za-z0-9]/.test(v));
-      const col = ['#e5604d', '#e5604d', '#e8b931', '#9ccc65', '#4cc38a'][sc];
-      const m = $('#mt'); m.style.setProperty('--c', col);
-      m.querySelectorAll('span').forEach((s, i) => s.classList.toggle('on', i < sc));
-      $('#mtx').textContent = v ? ['Too weak', 'Weak', 'Okay', 'Good', 'Strong'][sc] : 'Use 8+ characters';
-    });
-    ripple($('#go'));
-    $('#f').onsubmit = async e => {
-      e.preventDefault(); const btn = $('#go'), msg = $('#msg'); btn.disabled = true; btn.classList.add('loading'); msg.textContent = '';
-      const email = $('#em').value, password = pw.value;
-      try {
-        if (mode === 'login') { await api('login', { email, password }); await goIn(); }
-        else { await api('register', { email, password }); pendingEmail = email; viewVerify(); }
-      } catch (err) { msg.textContent = err.message; btn.disabled = false; btn.classList.remove('loading'); shake($('#f')); }
-    };
-  };
-  const setPane = () => { const keep = ($('#em') || {}).value || ''; $('#pane').innerHTML = paneHTML(); $('#em').value = keep; wirePane(); };
-
-  const viewForm = () => {
-    $('#ah').textContent = 'SOLSTICE'; $('#as').textContent = 'Classic crypto trading';
-    $('#bd').innerHTML = tabsHTML() + '<div id="pane" class="pane"></div>';
-    box.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
-      if (mode === b.dataset.m) return;
-      mode = b.dataset.m; $('.tabs', box).dataset.m = mode;
-      box.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-      setPane();
-    });
-    setPane();
-  };
-
-  const viewVerify = () => {
-    $('#ah').textContent = 'VERIFY';
-    $('#as').innerHTML = `We sent a 6-digit code to<br><b style="color:var(--text)">${esc(pendingEmail)}</b>`;
-    $('#bd').innerHTML = `<div class="pane"><form id="f"><input id="code" class="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="------" required>
-      <button class="btn" id="go">Verify &amp; create account</button>
-      <button type="button" class="btn ghost" id="re">Resend code</button>
-      <div class="msg" id="msg"></div></form><p class="note spamhint">Can't find the email? Check your <b>spam / junk</b> folder, then tap Resend code.</p><a id="back" class="back">&larr; Back</a></div>`;
-    $('#code').focus();
-    $('#code').oninput = e => { e.target.value = e.target.value.replace(/\D/g, ''); };
-    ripple($('#go')); ripple($('#re'));
-    $('#back').onclick = viewForm;
-    $('#re').onclick = async () => { const m = $('#msg'); try { await api('resend', { email: pendingEmail }); m.className = 'msg ok'; m.textContent = 'New code sent.'; } catch (e) { m.className = 'msg'; m.textContent = e.message; } };
-    $('#f').onsubmit = async e => {
-      e.preventDefault(); const btn = $('#go'), msg = $('#msg'); btn.disabled = true; btn.classList.add('loading'); msg.className = 'msg'; msg.textContent = '';
-      try { await api('verify', { email: pendingEmail, code: $('#code').value }); await goIn(); }
-      catch (err) { msg.textContent = err.message; btn.disabled = false; btn.classList.remove('loading'); shake($('#f')); }
-    };
-  };
-  viewForm();
-}
-
-/* ---------- app shell ---------- */
-let me = null, prices = {}, coinsList = null;
-async function loadMe(){ me = await api('me'); $('#semail').textContent = me.email; $('#sbal').textContent = usd(me.balance); $('#navadmin').classList.toggle('hide', !me.admin); }
-async function loadPrices(){ try{ prices = await api('prices'); }catch(e){ } }
-
-async function boot(){
-  try{ await loadMe(); }catch(e){ return showAuth(); }
-  $('#auth').classList.add('hide'); $('#app').classList.remove('hide');
-  $('#brand').innerHTML = logo(false) + '<span>SOLSTICE</span>';
-  await loadPrices();
-  route();
-}
-window.addEventListener('hashchange', route);
-$('#menu').onclick = () => $('#side').classList.toggle('open');
-$('#side').addEventListener('click', e => { if(e.target.closest('a[data-v]')) $('#side').classList.remove('open'); });
-document.addEventListener('click', e => { if(!e.target.closest('#side') && !e.target.closest('#menu')) $('#side').classList.remove('open'); });
-$('#logout').onclick = async () => { await api('logout',{}); me=null; location.hash=''; showAuth(); };
-
-const views = { home: vHome, trade: vTrade, deposit: vDeposit, withdraw: vWithdraw, portfolio: vPortfolio, admin: vAdmin };
-let timer;
-function route(){
-  if(!me) return;
-  const v = (location.hash||'#home').slice(1).split('?')[0];
-  const name = views[v] ? v : 'home';
-  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on', a.dataset.v===name));
-  clearInterval(timer);
-  views[name]();
-  window.scrollTo(0,0);
-}
-
-function marketRows(click){
-  const rows = Object.entries(prices).map(([s,p]) => `<tr class="${click?'click':''}" data-c="${s}">
-    <td><span class="sym">${s.slice(0,3)}</span>${esc(p.name)} <span style="color:var(--muted)">${s}</span></td>
-    <td class="r">${usd(p.price)}</td>
-    <td class="r ${p.change>=0?'up':'down'}">${p.change>=0?'+':''}${p.change.toFixed(2)}%</td></tr>`).join('');
-  return `<table><thead><tr><th>Market</th><th class="r">Price</th><th class="r">24h</th></tr></thead><tbody>${rows||'<tr><td colspan="3" class="empty">Prices unavailable right now.</td></tr>'}</tbody></table>`;
-}
-
-/* ---------- views ---------- */
-function vHome(){
-  const worth = Object.entries(me.holdings).reduce((t,[c,q])=>t+q*((prices[c]||{}).price||0),0);
-  $('#view').innerHTML = `
-    <div class="hero"><h2>Welcome to Solstice</h2>
-      <p class="lead" style="margin:6px 0 0">Deposit crypto, trade the major markets, and keep it simple.</p>
-      <div class="actions"><button class="btn" data-go="deposit">Deposit</button><button class="btn ghost" data-go="trade" style="margin:0;width:auto;padding:11px 24px">Start trading</button></div></div>
-    <div class="grid g3" style="margin-bottom:18px">
-      <div class="card stat"><small>Cash balance</small><div>${usd(me.balance)}</div></div>
-      <div class="card stat"><small>Holdings value</small><div>${usd(worth)}</div></div>
-      <div class="card stat"><small>Total</small><div>${usd(me.balance+worth)}</div></div>
-    </div>
-    <div class="card"><h3 style="margin-bottom:8px;font-size:20px">Markets</h3>${marketRows(true)}</div>`;
-  $('#view').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>location.hash=b.dataset.go);
-  $('#view').querySelectorAll('tr[data-c]').forEach(r=>r.onclick=()=>{ sessionStorage.coin=r.dataset.c; location.hash='trade'; });
-  timer = setInterval(async()=>{ await loadPrices(); if($('#view table')) $('#view .card:last-child').innerHTML='<h3 style="margin-bottom:8px;font-size:20px">Markets</h3>'+marketRows(true); },30000);
-}
-
-function vTrade(){
-  const syms = Object.keys(prices);
-  let coin = sessionStorage.coin && prices[sessionStorage.coin] ? sessionStorage.coin : syms[0], side = 'buy';
-  $('#view').innerHTML = `<h2>Trade</h2><p class="lead">Buy and sell using your Solstice balance.</p>
-    <div class="grid g2"><div class="card">
-      <div class="seg"><button class="buy on" data-s="buy">Buy</button><button class="sell" data-s="sell">Sell</button></div>
-      <label>Coin</label><select id="coin">${syms.map(s=>`<option value="${s}">${esc(prices[s].name)} (${s})</option>`).join('')}</select>
-      <label id="alab">Amount (USD)</label>
-      <div class="row"><input id="amt" type="number" min="0" step="any" placeholder="0.00" inputmode="decimal"><button class="btn ghost" id="max" style="margin:0;flex:0 0 70px">Max</button></div>
-      <div class="est" id="est"></div>
-      <button class="btn" id="go">Buy</button><div class="msg" id="msg"></div></div>
-    <div class="card"><h3 style="margin-bottom:8px;font-size:20px">Markets</h3><div id="mk">${marketRows(true)}</div></div></div>`;
-  const sel = $('#coin'); sel.value = coin;
-  const upd = () => {
-    const p = (prices[coin]||{}).price||0, a = Number($('#amt').value)||0;
-    $('#alab').textContent = side==='buy' ? 'Amount (USD)' : `Quantity (${coin})`;
-    $('#go').textContent = (side==='buy'?'Buy ':'Sell ')+coin;
-    $('#go').style.background = side==='buy' ? '' : 'linear-gradient(180deg,#f08272,#e5604d)';
-    $('#est').innerHTML = side==='buy'
-      ? `Price ${usd(p)} &middot; You get ≈ <b style="color:var(--text)">${qtyf(p?a/p:0)} ${coin}</b><br>Available: ${usd(me.balance)}`
-      : `Price ${usd(p)} &middot; You get ≈ <b style="color:var(--text)">${usd(a*p)}</b><br>You hold: ${qtyf(me.holdings[coin]||0)} ${coin}`;
-  };
-  sel.onchange = () => { coin = sel.value; sessionStorage.coin = coin; upd(); };
-  $('#amt').oninput = upd;
-  document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
-    side=b.dataset.s; document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b)); $('#amt').value=''; upd();
-  });
-  $('#max').onclick = () => { const p=(prices[coin]||{}).price||1; $('#amt').value = side==='buy' ? Math.floor(me.balance*100)/100 : (me.holdings[coin]||0); upd(); };
-  $('#view').querySelectorAll('tr[data-c]').forEach(r=>r.onclick=()=>{ coin=r.dataset.c; sel.value=coin; sessionStorage.coin=coin; upd(); });
-  $('#go').onclick = async () => {
-    const btn=$('#go'), msg=$('#msg'); msg.className='msg'; msg.textContent=''; btn.disabled=true;
-    try{
-      const r = await api('trade',{coin,side,amount:Number($('#amt').value)});
-      toast(`${side==='buy'?'Bought':'Sold'} ${qtyf(r.qty)} ${coin} at ${usd(r.price)}`);
-      $('#amt').value=''; await loadMe(); await loadPrices(); upd();
-    }catch(e){ msg.textContent=e.message; if(e.status===401) return boot(); }
-    btn.disabled=false;
-  };
-  upd();
-  timer = setInterval(async()=>{ await loadPrices(); const m=$('#mk'); if(m){ m.innerHTML=marketRows(true); m.querySelectorAll('tr[data-c]').forEach(r=>r.onclick=()=>{coin=r.dataset.c;sel.value=coin;upd();}); } upd(); },30000);
-}
-
-async function vDeposit(){
-  if(!coinsList) try{ coinsList = await api('coins'); }catch(e){ coinsList=[]; }
-  const avail = coinsList.filter(c=>c.deposit);
-  $('#view').innerHTML = `<h2>Deposit</h2><p class="lead">Pick a coin, send the exact amount shown, then paste your transaction ID. Your balance is credited automatically once the network confirms.</p>
-    <div class="grid g2"><div class="card" id="dbox">${avail.length ? `
-      <label style="margin-top:0">Coin</label><select id="dc">${avail.map(c=>`<option value="${c.code}">${esc(c.label)}</option>`).join('')}</select>
-      <label>Amount to deposit (USD, min $10)</label><input id="da" type="number" min="10" step="any" placeholder="100" inputmode="decimal">
-      <button class="btn" id="dg">Get deposit details</button><div class="msg" id="msg"></div>` : '<div class="empty">Deposits are not available right now.</div>'}</div>
-    <div class="card"><h3 style="margin-bottom:8px;font-size:20px">Recent deposits</h3><div id="dh"><div class="empty">Loading&hellip;</div></div></div></div>`;
-  const dg = $('#dg');
-  if(dg) dg.onclick = async () => {
-    const btn=$('#dg'), msg=$('#msg'); msg.className='msg'; msg.textContent=''; btn.disabled=true;
-    try{
-      const d = await api('deposit',{coin:$('#dc').value,amount:Number($('#da').value)});
-      $('#dbox').innerHTML = `<h3 style="font-size:20px;margin-bottom:10px">Send ${esc(d.payCurrency)}</h3>
-        <label style="margin-top:0">Exact amount to send</label><div class="addr">${esc(d.payAmount)} ${esc(d.payCurrency)}</div>
-        <label>Deposit address</label><div class="addr">${esc(d.address)}</div>
-        <button class="btn ghost" id="cp" style="margin-top:4px">Copy address</button>
-        <p class="note">Send <b>exactly</b> this amount of <b>${esc(d.coin)}</b> (the last digits identify your deposit; a different amount can&rsquo;t be matched). This quote is valid for 2 hours. You&rsquo;ll be credited ${usd(d.usd)}.</p>
-        <label>Then paste your transaction ID</label><input id="tx" placeholder="Transaction hash" autocomplete="off">
-        <button class="btn" id="ts">I&rsquo;ve sent it</button><div class="msg" id="msg"></div>
-        <button class="btn ghost" id="nw">New deposit</button>`;
-      $('#cp').onclick = () => { navigator.clipboard.writeText(d.address).then(()=>toast('Address copied')); };
-      $('#nw').onclick = vDeposit;
-      $('#ts').onclick = async () => {
-        const b=$('#ts'), m=$('#msg'); m.className='msg'; m.textContent=''; b.disabled=true;
-        try{ await api('deposit/tx',{id:d.id,txid:$('#tx').value}); m.className='msg ok'; m.textContent='Got it. We are watching the network and will credit you automatically.'; loadDeposits(); }
-        catch(e){ m.textContent=e.message; if(e.status===401) return boot(); b.disabled=false; }
-      };
-      loadDeposits();
-    }catch(e){ msg.textContent=e.message; if(e.status===401) return boot(); btn.disabled=false; }
-  };
-  loadDeposits();
-  timer = setInterval(async()=>{ const was=me.balance; await loadMe(); if(me.balance!==was) toast('Deposit credited!'); loadDeposits(); },20000);
-}
-async function loadDeposits(){
-  try{
-    const rows = await api('deposits'); const el=$('#dh'); if(!el) return;
-    el.innerHTML = rows.length ? `<table><tbody>${rows.map(d=>`<tr><td>${esc(d.coin)}<br><small style="color:var(--muted)">${new Date(d.ts).toLocaleString()}</small></td><td class="r">${usd(d.usd)}<br><span class="pill ${esc(d.status)}">${esc(d.status)}${d.status==='confirming'&&d.confirmations!=null?' '+d.confirmations:''}</span></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No deposits yet.</div>';
-  }catch(e){}
-}
-
-async function vWithdraw(){
-  if(!coinsList) try{ coinsList = await api('coins'); }catch(e){ coinsList=[]; }
-  const fee = c => (coinsList.find(x=>x.code===c)||{}).fee||0;
-  $('#view').innerHTML = `<h2>Withdraw</h2><p class="lead">Send your cash balance out as crypto. Sell any holdings to cash first on the Trade page.</p>
-    <div class="grid g2"><div class="card">
-      <small style="color:var(--muted)">Available</small><div class="serif" style="font-size:26px;color:var(--gold)">${usd(me.balance)}</div>
-      <label>Coin</label><select id="wc">${coinsList.map(c=>`<option value="${c.code}">${esc(c.label)}</option>`).join('')}</select>
-      <label>Amount (USD, min $10)</label><div class="row"><input id="wa" type="number" min="10" step="any" placeholder="100" inputmode="decimal"><button class="btn ghost" id="wm" style="margin:0;flex:0 0 70px">Max</button></div>
-      <label>Destination address</label><input id="wd" placeholder="Your wallet address" autocomplete="off" spellcheck="false">
-      <div class="est" id="we"></div>
-      <button class="btn" id="wg">Request withdrawal</button><div class="msg" id="msg"></div>
-      <p class="note">Double-check the address and network. Crypto sent to a wrong address can&rsquo;t be recovered. Withdrawals are sent after review, usually shortly after you request them.</p></div>
-    <div class="card"><h3 style="margin-bottom:8px;font-size:20px">Recent withdrawals</h3><div id="wh"><div class="empty">Loading&hellip;</div></div></div></div>`;
-  const upd = () => { const c=$('#wc').value, a=Number($('#wa').value)||0, p=(prices[(coinsList.find(x=>x.code===c)||{}).sym]||{}).price||0;
-    $('#we').innerHTML = `Network fee: ${usd(fee(c))}${p&&a>fee(c)?` &middot; You receive ≈ <b style="color:var(--text)">${qtyf((a-fee(c))/p)} ${(coinsList.find(x=>x.code===c)||{}).sym}</b>`:''}`; };
-  $('#wc').onchange = upd; $('#wa').oninput = upd;
-  $('#wm').onclick = () => { $('#wa').value = Math.floor(me.balance*100)/100; upd(); };
-  $('#wg').onclick = async () => {
-    const btn=$('#wg'), msg=$('#msg'); msg.className='msg'; msg.textContent=''; btn.disabled=true;
-    try{
-      await api('withdraw',{coin:$('#wc').value,amount:Number($('#wa').value),address:$('#wd').value});
-      toast('Withdrawal requested'); $('#wa').value=''; $('#wd').value=''; await loadMe(); vWithdraw();
-    }catch(e){ msg.textContent=e.message; if(e.status===401) return boot(); btn.disabled=false; }
-  };
-  upd();
-  try{
-    const rows = await api('withdrawals'); const el=$('#wh'); if(!el) return;
-    el.innerHTML = rows.length ? `<table><tbody>${rows.map(w=>`<tr><td>${qtyf(w.amount)} ${esc(w.sym)}<br><small style="color:var(--muted)">${new Date(w.ts).toLocaleString()}</small></td><td class="r">${usd(w.usd)}<br><span class="pill ${esc(w.status)}">${esc(w.status)}</span></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No withdrawals yet.</div>';
-  }catch(e){}
-}
-
-async function vAdmin(){
-  if(!me.admin){ location.hash='home'; return; }
-  $('#view').innerHTML = `<h2>Admin</h2><p class="lead">Pending withdrawals. Send the coins from Exodus, then paste the transaction ID and mark as sent. Rejecting refunds the user in full.</p>
-    <div class="card"><div id="ah"><div class="empty">Loading&hellip;</div></div></div>`;
-  const load = async () => {
-    try{
-      const rows = await api('admin/withdrawals'); const el=$('#ah'); if(!el) return;
-      el.innerHTML = rows.length ? rows.map(w=>`<div style="padding:14px 0;border-bottom:1px solid #1c1a12">
-        <b>${qtyf(w.amount)} ${esc(w.sym)}</b> <span style="color:var(--muted)">(${usd(w.usd)} less ${usd(w.fee)} fee)</span><br>
-        <small style="color:var(--muted)">${esc(w.email)} &middot; ${new Date(w.ts).toLocaleString()}</small>
-        <div class="addr">${esc(w.address)}</div>
-        <div class="row"><input data-tx="${esc(w.id)}" placeholder="Transaction ID after sending"><button class="mini ok" data-sent="${esc(w.id)}" style="flex:0 0 auto">Mark sent</button><button class="mini no" data-rej="${esc(w.id)}" style="flex:0 0 auto">Reject</button></div></div>`).join('') : '<div class="empty">No pending withdrawals.</div>';
-      el.querySelectorAll('[data-sent]').forEach(b=>b.onclick=async()=>{
-        const id=b.dataset.sent, txid=el.querySelector(`[data-tx="${id}"]`).value;
-        try{ await api('admin/withdrawals/sent',{id,txid}); toast('Marked as sent'); load(); }catch(e){ toast(e.message); }
-      });
-      el.querySelectorAll('[data-rej]').forEach(b=>b.onclick=async()=>{
-        if(!confirm('Reject and refund this withdrawal?')) return;
-        try{ await api('admin/withdrawals/reject',{id:b.dataset.rej}); toast('Rejected and refunded'); load(); }catch(e){ toast(e.message); }
-      });
-    }catch(e){ toast(e.message); }
-  };
-  load();
-  timer = setInterval(load, 20000);
-}
-
-async function vPortfolio(){
-  const rows = Object.entries(me.holdings).map(([c,q])=>{ const p=(prices[c]||{}).price||0; return `<tr><td><span class="sym">${c.slice(0,3)}</span>${c}</td><td class="r">${qtyf(q)}</td><td class="r">${usd(q*p)}</td></tr>`; }).join('');
-  $('#view').innerHTML = `<h2>Portfolio</h2><p class="lead">Your balance and holdings.</p>
-    <div class="grid g2"><div class="card"><div class="stat" style="margin-bottom:12px"><small>Cash balance</small><div>${usd(me.balance)}</div></div>
-      <table><thead><tr><th>Asset</th><th class="r">Amount</th><th class="r">Value</th></tr></thead><tbody>${rows||'<tr><td colspan="3" class="empty">No holdings yet.</td></tr>'}</tbody></table></div>
-    <div class="card"><h3 style="margin-bottom:8px;font-size:20px">Recent trades</h3><div id="th"><div class="empty">Loading&hellip;</div></div></div></div>`;
-  try{
-    const t = await api('trades');
-    $('#th').innerHTML = t.length ? `<table><tbody>${t.map(x=>`<tr><td><b class="${x.side==='buy'?'up':'down'}">${x.side.toUpperCase()}</b> ${qtyf(x.qty)} ${x.coin}<br><small style="color:var(--muted)">${new Date(x.t).toLocaleString()}</small></td><td class="r">${usd(x.usd)}<br><small style="color:var(--muted)">@ ${usd(x.price)}</small></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No trades yet.</div>';
-  }catch(e){}
-}
-
-/* ---------- start ---------- */
-runIntro();
 boot();
-</script>
-</body>
-</html>
+</script></body></html>
