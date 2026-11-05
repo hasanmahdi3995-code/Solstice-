@@ -1,7 +1,7 @@
 {
   "name": "solstice",
   "version": "1.0.0",
-  "description": "Solstice - classic crypto trading site",
+  "description": "Solstice - online casino",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
