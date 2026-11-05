@@ -339,6 +339,31 @@ app.post('/api/mines/cashout', authed(async (req, res) => {
   } finally { await unlock(req.email); }
 }));
 
+/* ---------- INSTANT GAMES: dice, limbo, coin, plinko ---------- */
+async function instant(req, res, game, play) {
+  const bet = betCents(req.body.bet);
+  await lockUser(req.email);
+  try {
+    const r = play();
+    if (!r) bad('Invalid game settings.');
+    await debit(req.email, bet);
+    const pay = r.win === false ? 0 : Math.floor(bet * r.mult);
+    await credit(req.email, pay); await record(req.email, game, bet, pay);
+    res.json({ ...r, bet: bet / 100, payout: pay / 100 });
+  } finally { await unlock(req.email); }
+}
+app.post('/api/dice/roll', authed((req, res) => instant(req, res, 'dice', () => G.dice(req.body.target, !!req.body.over))));
+app.post('/api/limbo/play', authed((req, res) => instant(req, res, 'limbo', () => G.limbo(req.body.target))));
+app.post('/api/coin/flip', authed((req, res) => instant(req, res, 'coin', () => G.coin(req.body.pick))));
+app.post('/api/plinko/drop', authed((req, res) => instant(req, res, 'plinko', () => {
+  const r = G.plinko(req.body.rows, req.body.risk); if (r) r.win = r.mult > 0; return r;
+})));
+app.get('/api/plinko/table', (req, res) => {
+  const rows = Number(req.query.rows), risk = String(req.query.risk);
+  if (!G.PL_ROWS.includes(rows) || !['low', 'medium', 'high'].includes(risk)) return res.status(400).json({ error: 'Bad table.' });
+  res.json(G.plinkoTable(rows, risk));
+});
+
 /* ---------- SLOTS ---------- */
 app.post('/api/slots/spin', authed(async (req, res) => {
   const bet = betCents(req.body.bet);

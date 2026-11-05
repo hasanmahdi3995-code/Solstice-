@@ -47,4 +47,53 @@ function slotsRTP() {
   return t / L ** 3;
 }
 
-module.exports = { MINES_EDGE, TILES, minesMult, placeMines, spin, slotsRTP, STRIP, PAY, SYMBOLS, LINES };
+/* ---------- INSTANT GAMES (3% house edge) ---------- */
+const EDGE = 0.97;
+const fl = (x, d) => Math.floor(x * 10 ** d + 1e-9) / 10 ** d;
+// DICE: roll 0.00-99.99. over: win if roll > target; under: win if roll < target
+function diceChance(target, over) {
+  const T = Math.round(target * 100);
+  return over ? (9999 - T) / 10000 : T / 10000;
+}
+function diceMult(target, over) { return fl(EDGE / diceChance(target, over), 4); }
+function dice(target, over) {
+  target = Number(target);
+  if (!(target >= 2 && target <= 98)) return null;
+  const r = crypto.randomInt(0, 10000), roll = r / 100;
+  return { roll, win: over ? roll > target : roll < target, mult: diceMult(target, over) };
+}
+// LIMBO: result = 0.97 / U, floored to 2dp, min 1.00. Win if result >= target.
+function limbo(target) {
+  target = Number(target);
+  if (!(target >= 1.01 && target <= 1000)) return null;
+  const u = crypto.randomInt(1, 1e9 + 1) / 1e9;
+  const result = Math.min(1e6, Math.max(1, fl(EDGE / u, 2)));
+  return { result, win: result >= target, mult: fl(target, 2) };
+}
+// COIN FLIP
+function coin(pick) {
+  if (pick !== 'h' && pick !== 't') return null;
+  const result = crypto.randomInt(0, 2) ? 'h' : 't';
+  return { result, win: result === pick, mult: 1.94 };
+}
+// PLINKO: rows 8/12/16, risk low/medium/high. Table is scaled so RTP = 97%.
+const PL_ROWS = [8, 12, 16];
+const PL_RISK = { low: [10, 0.5, 2.4], medium: [250, 0.15, 3.6], high: [4000, 0.04, 5] };
+const plCache = {};
+function plinkoTable(rows, risk) {
+  const key = rows + risk; if (plCache[key]) return plCache[key];
+  const [A, B, gam] = PL_RISK[risk], n = rows;
+  const raw = [...Array(n + 1)].map((_, k) => B + A * Math.pow(Math.abs(k - n / 2) / (n / 2), gam));
+  const p = [...Array(n + 1)].map((_, k) => comb(n, k) / 2 ** n);
+  const s = EDGE / raw.reduce((t, r, k) => t + r * p[k], 0);
+  return (plCache[key] = raw.map((r) => fl(r * s, 2)));
+}
+function plinko(rows, risk) {
+  rows = Number(rows);
+  if (!PL_ROWS.includes(rows) || !PL_RISK[risk]) return null;
+  const path = [...Array(rows)].map(() => crypto.randomInt(0, 2));
+  const bucket = path.reduce((a, b) => a + b, 0);
+  return { path, bucket, mult: plinkoTable(rows, risk)[bucket] };
+}
+
+module.exports = { MINES_EDGE, TILES, minesMult, placeMines, spin, slotsRTP, STRIP, PAY, SYMBOLS, LINES, dice, diceMult, diceChance, limbo, coin, plinko, plinkoTable, PL_ROWS };
