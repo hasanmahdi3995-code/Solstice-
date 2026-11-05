@@ -219,12 +219,8 @@ app.post('/api/logout', (req, res) => {
 const COINS = {
   BTC: { id: 'bitcoin', name: 'Bitcoin' },
   ETH: { id: 'ethereum', name: 'Ethereum' },
-  SOL: { id: 'solana', name: 'Solana' },
-  BNB: { id: 'binancecoin', name: 'BNB' },
-  XRP: { id: 'ripple', name: 'XRP' },
   LTC: { id: 'litecoin', name: 'Litecoin' },
   DOGE: { id: 'dogecoin', name: 'Dogecoin' },
-  TRX: { id: 'tron', name: 'TRON' },
 };
 let priceCache = { t: 0, data: null };
 async function getPrices() {
@@ -247,53 +243,113 @@ async function getPrices() {
 }
 app.get('/api/prices', wrap(async (req, res) => res.json(await getPrices())));
 
-/* ---------- account / trading ---------- */
-const flat = (arr) => { const o = {}; for (let i = 0; i < (arr || []).length; i += 2) o[arr[i]] = Number(arr[i + 1]); return o; };
+/* ---------- account / wallet ---------- */
+const G = require('./games');
+const cents = (usd) => Math.round(Number(usd) * 100);
+const MIN_BET = 10, MAX_BET = 100000; // cents ($0.10 - $1,000)
+const betCents = (v) => { const c = cents(v); if (!isFinite(c) || c < MIN_BET || c > MAX_BET) bad('Bet must be between $0.10 and $1,000.'); return c; };
+async function debit(email, c) {
+  const left = await R('DECRBY', 'bal:' + email, c);
+  if (left < 0) { await R('INCRBY', 'bal:' + email, c); bad('Not enough balance. Open Wallet to deposit.'); }
+}
+const credit = (email, c) => c > 0 ? R('INCRBY', 'bal:' + email, c) : null;
+async function record(email, game, bet, payout) {
+  await R('HINCRBY', 'stats', 'wagered', bet); await R('HINCRBY', 'stats', 'paid', payout); await R('HINCRBY', 'stats', 'bets', 1);
+  await R('LPUSH', 'bets:' + email, JSON.stringify({ t: Date.now(), game, bet: bet / 100, payout: payout / 100 }));
+  await R('LTRIM', 'bets:' + email, 0, 29);
+  await R('LPUSH', 'bets:all', JSON.stringify({ t: Date.now(), u: email.replace(/^(.).*(@.*)$/, '$1***$2'), game, bet: bet / 100, payout: payout / 100 }));
+  await R('LTRIM', 'bets:all', 0, 19);
+}
+async function lockUser(email) {
+  if (!(await R('SET', 'glock:' + email, '1', 'NX', 'EX', 5))) bad('Slow down - previous action still running.', 429);
+}
+const unlock = (email) => R('DEL', 'glock:' + email);
 
 app.get('/api/me', authed(async (req, res) => {
-  const [bal, hold] = await Promise.all([R('GET', 'bal:' + req.email), R('HGETALL', 'hold:' + req.email)]);
-  const holdings = flat(hold);
-  for (const k of Object.keys(holdings)) if (holdings[k] < 1e-9) delete holdings[k];
-  res.json({ email: req.email, balance: Number(bal || 0) / 100, holdings, admin: isAdmin(req.email) });
+  const bal = await R('GET', 'bal:' + req.email);
+  res.json({ email: req.email, balance: Number(bal || 0) / 100, admin: isAdmin(req.email) });
+}));
+app.get('/api/history', authed(async (req, res) => {
+  res.json(((await R('LRANGE', 'bets:' + req.email, 0, 29)) || []).map((x) => JSON.parse(x)));
+}));
+app.get('/api/feed', wrap(async (req, res) => {
+  res.json(((await R('LRANGE', 'bets:all', 0, 19)) || []).map((x) => JSON.parse(x)));
+}));
+app.get('/api/info', (req, res) => res.json({
+  minesEdge: G.MINES_EDGE, slotsRTP: Number(G.slotsRTP().toFixed(4)), pay: G.PAY, lines: G.LINES.length,
 }));
 
-app.get('/api/trades', authed(async (req, res) => {
-  const rows = await R('LRANGE', 'trades:' + req.email, 0, 29);
-  res.json((rows || []).map((x) => JSON.parse(x)));
+/* ---------- MINES ---------- */
+const mkey = (e) => 'mines:' + e;
+const minesView = (g, over) => ({
+  bet: g.bet / 100, mines: g.mines, revealed: g.revealed, safe: g.revealed.length,
+  mult: G.minesMult(g.mines, g.revealed.length), next: G.minesMult(g.mines, g.revealed.length + 1),
+  ...(over ? { minePositions: g.positions } : {}),
+});
+app.get('/api/mines/state', authed(async (req, res) => {
+  const raw = await R('GET', mkey(req.email));
+  res.json(raw ? { active: true, ...minesView(JSON.parse(raw)) } : { active: false });
+}));
+app.post('/api/mines/start', authed(async (req, res) => {
+  const bet = betCents(req.body.bet), mines = Math.floor(Number(req.body.mines));
+  if (!(mines >= 1 && mines <= 24)) bad('Choose 1 to 24 mines.');
+  await lockUser(req.email);
+  try {
+    if (await R('EXISTS', mkey(req.email))) bad('Finish your current game first.');
+    await debit(req.email, bet);
+    const g = { bet, mines, positions: G.placeMines(mines), revealed: [] };
+    await R('SET', mkey(req.email), JSON.stringify(g));
+    res.json({ active: true, ...minesView(g) });
+  } finally { await unlock(req.email); }
+}));
+app.post('/api/mines/reveal', authed(async (req, res) => {
+  const tile = Math.floor(Number(req.body.tile));
+  if (!(tile >= 0 && tile < G.TILES)) bad('Bad tile.');
+  await lockUser(req.email);
+  try {
+    const raw = await R('GET', mkey(req.email));
+    if (!raw) bad('No active game.');
+    const g = JSON.parse(raw);
+    if (g.revealed.includes(tile)) bad('Already revealed.');
+    if (g.positions.includes(tile)) {
+      await R('DEL', mkey(req.email));
+      await record(req.email, 'mines', g.bet, 0);
+      return res.json({ active: false, boom: true, tile, payout: 0, ...minesView(g, true) });
+    }
+    g.revealed.push(tile);
+    if (g.revealed.length === G.TILES - g.mines) { // cleared the board: auto cash out
+      const pay = Math.floor(g.bet * G.minesMult(g.mines, g.revealed.length));
+      await R('DEL', mkey(req.email)); await credit(req.email, pay); await record(req.email, 'mines', g.bet, pay);
+      return res.json({ active: false, cashed: true, payout: pay / 100, ...minesView(g, true) });
+    }
+    await R('SET', mkey(req.email), JSON.stringify(g));
+    res.json({ active: true, tile, ...minesView(g) });
+  } finally { await unlock(req.email); }
+}));
+app.post('/api/mines/cashout', authed(async (req, res) => {
+  await lockUser(req.email);
+  try {
+    const raw = await R('GET', mkey(req.email));
+    if (!raw) bad('No active game.');
+    const g = JSON.parse(raw);
+    if (!g.revealed.length) bad('Reveal at least one tile before cashing out.');
+    const pay = Math.floor(g.bet * G.minesMult(g.mines, g.revealed.length));
+    await R('DEL', mkey(req.email)); await credit(req.email, pay); await record(req.email, 'mines', g.bet, pay);
+    res.json({ active: false, cashed: true, payout: pay / 100, ...minesView(g, true) });
+  } finally { await unlock(req.email); }
 }));
 
-app.post('/api/trade', authed(async (req, res) => {
-  const coin = String(req.body.coin || '').toUpperCase(), side = req.body.side;
-  const amount = Number(req.body.amount);
-  if (!COINS[coin]) bad('Unknown coin.');
-  if (side !== 'buy' && side !== 'sell') bad('Invalid side.');
-  if (!isFinite(amount) || amount <= 0) bad('Enter a valid amount.');
-  await limit('trade:' + req.email, 60, 60);
-  const prices = await getPrices();
-  const price = prices[coin] && prices[coin].price;
-  if (!price) bad('Price unavailable.', 503);
-  const bk = 'bal:' + req.email, hk = 'hold:' + req.email;
-  let qty, usd;
-
-  if (side === 'buy') {
-    const cents = Math.round(amount * 100);
-    if (cents < 100) bad('Minimum buy is $1.00.');
-    const left = await R('DECRBY', bk, cents);
-    if (left < 0) { await R('INCRBY', bk, cents); bad('Not enough balance. Deposit first.'); }
-    qty = Number((cents / 100 / price).toFixed(8));
-    await R('HINCRBYFLOAT', hk, coin, qty);
-    usd = cents / 100;
-  } else {
-    qty = Number(amount.toFixed(8));
-    const left = Number(await R('HINCRBYFLOAT', hk, coin, -qty));
-    if (left < -1e-9) { await R('HINCRBYFLOAT', hk, coin, qty); bad('You do not hold that much ' + coin + '.'); }
-    const cents = Math.floor(qty * price * 100);
-    await R('INCRBY', bk, cents);
-    usd = cents / 100;
-  }
-  await R('LPUSH', 'trades:' + req.email, JSON.stringify({ t: Date.now(), coin, side, qty, price, usd }));
-  await R('LTRIM', 'trades:' + req.email, 0, 49);
-  res.json({ ok: true, qty, usd, price });
+/* ---------- SLOTS ---------- */
+app.post('/api/slots/spin', authed(async (req, res) => {
+  const bet = betCents(req.body.bet);
+  await lockUser(req.email);
+  try {
+    await debit(req.email, bet);
+    const r = G.spin();
+    const pay = Math.floor(bet * r.mult);
+    await credit(req.email, pay); await record(req.email, 'slots', bet, pay);
+    res.json({ grid: r.grid, wins: r.wins, payout: pay / 100, bet: bet / 100 });
+  } finally { await unlock(req.email); }
 }));
 
 /* ---------- supported chains (deposit + withdraw) ---------- */
@@ -502,6 +558,36 @@ app.post('/api/admin/withdrawals/reject', adminOnly(async (req, res) => {
   res.json({ ok: true });
 }));
 
+
+/* ---------- admin: stats, users, balance adjust ---------- */
+async function scanKeys(match) {
+  let cur = '0'; const out = [];
+  do { const [n, keys] = await R('SCAN', cur, 'MATCH', match, 'COUNT', 200); cur = n; out.push(...keys); } while (cur !== '0' && out.length < 2000);
+  return out;
+}
+app.get('/api/admin/stats', adminOnly(async (req, res) => {
+  const [st, users, pend] = await Promise.all([R('HGETALL', 'stats'), scanKeys('user:*'), R('LLEN', 'wd:pending')]);
+  const s = flat(st); const wagered = (s.wagered || 0) / 100, paid = (s.paid || 0) / 100;
+  res.json({ users: users.length, bets: s.bets || 0, wagered, paid, profit: wagered - paid, pendingWithdrawals: pend || 0 });
+}));
+app.get('/api/admin/users', adminOnly(async (req, res) => {
+  const keys = await scanKeys('user:*');
+  const emails = keys.map((k) => k.slice(5));
+  const bals = emails.length ? await R('MGET', ...emails.map((e) => 'bal:' + e)) : [];
+  res.json(emails.map((e, i) => ({ email: e, balance: Number(bals[i] || 0) / 100 })).sort((a, b) => b.balance - a.balance));
+}));
+app.post('/api/admin/adjust', adminOnly(async (req, res) => {
+  const email = normEmail(req.body.email), amt = cents(req.body.amount);
+  if (!email || !isFinite(amt) || amt === 0 || Math.abs(amt) > 1e7) bad('Enter an email and a non-zero amount.');
+  if (!(await R('EXISTS', 'user:' + email))) bad('User not found.', 404);
+  const left = await R('INCRBY', 'bal:' + email, amt);
+  if (left < 0) { await R('INCRBY', 'bal:' + email, -amt); bad('That would make the balance negative.'); }
+  await R('LPUSH', 'adminlog', JSON.stringify({ t: Date.now(), by: req.email, email, amount: amt / 100, note: String(req.body.note || '').slice(0, 100) }));
+  await R('LTRIM', 'adminlog', 0, 99);
+  res.json({ ok: true, balance: left / 100 });
+}));
+app.get('/api/admin/log', adminOnly(async (req, res) => res.json(((await R('LRANGE', 'adminlog', 0, 49)) || []).map((x) => JSON.parse(x)))));
+
 /* ---------- health check: open /api/health to see what is configured (no secrets shown) ---------- */
 app.get('/api/health', (req, res) => res.json({
   ok: true,
@@ -517,6 +603,7 @@ app.use((err, req, res, next) => {
   if (req.path.startsWith('/api')) return res.status(err.status || 400).json({ error: 'Bad request.' });
   next(err);
 });
+app.use(express.static(path.join(__dirname, '..', 'public'), { index: false }));
 app.get('/', (req, res) => res.type('html').send(HTML));
 app.use((req, res) => res.status(404).type('html').send(HTML));
 
