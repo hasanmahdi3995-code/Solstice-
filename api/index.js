@@ -116,7 +116,8 @@ async function sendCode(email, code) {
       await tx.sendMail({
         from: 'Solstice <' + process.env.GMAIL_USER + '>',
         to: email,
-        subject: `Your Solstice code: ${code}`,
+        subject: `${code} is your Solstice verification code`,
+        text: `Your Solstice verification code is ${code}. It expires in 15 minutes. If you did not request this, ignore this email.`,
         html: `<div style="font-family:Georgia,serif;background:#0a0a0b;color:#eee;padding:32px;text-align:center">
         <h2 style="color:#e8b931;letter-spacing:6px;margin:0 0 16px">SOLSTICE</h2>
         <p>Use this code to verify your email:</p>
@@ -133,7 +134,8 @@ async function sendCode(email, code) {
     body: JSON.stringify({
       from: process.env.EMAIL_FROM || 'Solstice <onboarding@resend.dev>',
       to: [email],
-      subject: `Your Solstice code: ${code}`,
+      subject: `${code} is your Solstice verification code`,
+        text: `Your Solstice verification code is ${code}. It expires in 15 minutes. If you did not request this, ignore this email.`,
       html: `<div style="font-family:Georgia,serif;background:#0a0a0b;color:#eee;padding:32px;text-align:center">
         <h2 style="color:#e8b931;letter-spacing:6px;margin:0 0 16px">SOLSTICE</h2>
         <p>Use this code to verify your email:</p>
