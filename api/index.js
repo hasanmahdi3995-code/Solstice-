@@ -20,9 +20,18 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
+// Some Vercel runtimes parse the body before Express sees it; don't parse it twice.
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === 'object' && Object.keys(req.body).length) req._body = true;
+  next();
+});
 app.use(express.json({ limit: '50kb' }));
 
-const HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+let HTML;
+for (const dir of [__dirname, process.cwd(), path.join(process.cwd(), 'public')]) {
+  try { HTML = fs.readFileSync(path.join(dir, 'index.html'), 'utf8'); break; } catch (e) { /* try next */ }
+}
+if (!HTML) HTML = '<h1>index.html is missing from the deployment</h1>';
 
 /* ---------- helpers ---------- */
 class HttpError extends Error {
@@ -473,7 +482,21 @@ app.post('/api/admin/withdrawals/reject', adminOnly(async (req, res) => {
   res.json({ ok: true });
 }));
 
+/* ---------- health check: open /api/health to see what is configured (no secrets shown) ---------- */
+app.get('/api/health', (req, res) => res.json({
+  ok: true,
+  database: !!((process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) || (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)),
+  session_secret: !!process.env.SESSION_SECRET,
+  email_service: !!process.env.RESEND_API_KEY,
+}));
+
 /* ---------- page ---------- */
+// Anything under /api that doesn't exist, or a bad request body, must answer in JSON (never an HTML page).
+app.use('/api', (req, res) => res.status(404).json({ error: 'Unknown API route.' }));
+app.use((err, req, res, next) => {
+  if (req.path.startsWith('/api')) return res.status(err.status || 400).json({ error: 'Bad request.' });
+  next(err);
+});
 app.get('/', (req, res) => res.type('html').send(HTML));
 app.use((req, res) => res.status(404).type('html').send(HTML));
 
