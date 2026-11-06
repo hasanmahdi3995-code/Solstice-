@@ -398,7 +398,7 @@ const fmtUnits = (u, dec) => {
 };
 
 app.get('/api/coins', (req, res) =>
-  res.json(Object.entries(CHAINS).map(([code, c]) => ({ code, label: c.label, sym: c.sym, fee: c.fee, deposit: !!depositAddress(code) }))));
+  res.json(Object.entries(CHAINS).map(([code, c]) => ({ code, label: c.label, sym: c.sym, fee: c.fee, conf: c.conf, deposit: !!depositAddress(code) }))));
 
 /* ---------- deposits (your Exodus addresses, auto-verified on-chain) ---------- */
 // Every deposit gets a unique exact amount (a few tiny extra units). Only a transaction that sends
