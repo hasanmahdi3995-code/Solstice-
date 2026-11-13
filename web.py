@@ -15,7 +15,11 @@ WEB_URL = os.environ["WEB_URL"].rstrip("/")
 RETENTION_DAYS = int(os.getenv("RETENTION_DAYS", "90"))
 REDIRECT_URI = f"{WEB_URL}/callback"
 
-redis = Redis.from_env()  # reads UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
+# Works with either manual UPSTASH_* vars or the ones Vercel's Upstash integration adds (KV_*).
+redis = Redis(
+    url=os.getenv("UPSTASH_REDIS_REST_URL") or os.environ["KV_REST_API_URL"],
+    token=os.getenv("UPSTASH_REDIS_REST_TOKEN") or os.environ["KV_REST_API_TOKEN"],
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ["FLASK_SECRET"]
@@ -59,19 +63,25 @@ def ip_key(raw: str) -> str:
 
 
 def check_vpn(ip: str):
-    """Returns (is_vpn: bool|None, kind, org, country). None = lookup failed (fail open)."""
+    """Returns (is_vpn: bool|None, kind, org, country, country_code). None = lookup failed (fail open)."""
     try:
         d = requests.get(
             f"http://ip-api.com/json/{ip}",
-            params={"fields": "status,proxy,hosting,isp,org,country"},
+            params={"fields": "status,proxy,hosting,isp,org,country,countryCode"},
             timeout=3,
         ).json()
         if d.get("status") != "success":
-            return None, "", "", ""
+            return None, "", "", "", ""
         kind = "VPN/proxy" if d.get("proxy") else ("hosting/datacenter" if d.get("hosting") else "")
-        return bool(d.get("proxy") or d.get("hosting")), kind, d.get("org") or d.get("isp") or "", d.get("country") or ""
+        return (
+            bool(d.get("proxy") or d.get("hosting")),
+            kind,
+            d.get("org") or d.get("isp") or "",
+            d.get("country") or "",
+            d.get("countryCode") or "",
+        )
     except Exception:
-        return None, "", "", ""
+        return None, "", "", "", ""
 
 
 @app.route("/")
@@ -147,7 +157,7 @@ def callback():
     key = ip_key(ip)
     ttl = RETENTION_DAYS * 86400
 
-    vpn, kind, org, country = check_vpn(ip)
+    vpn, kind, org, country, cc = check_vpn(ip)
 
     redis.sadd(f"ips:{uid}", ip)
     if ttl:
@@ -168,6 +178,7 @@ def callback():
                 "kind": kind,
                 "org": org,
                 "country": country,
+                "cc": cc,
                 "ts": int(time.time()),
             }
         ),
